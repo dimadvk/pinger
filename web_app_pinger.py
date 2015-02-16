@@ -1,13 +1,26 @@
 #!/usr/bin/env python
 # coding:utf-8
 
+
+##### To Do List #####
+"""
+- add checkin is database 'pinger_db.sqlite3' exists when server starts.
+    If no 'pinger_db.sqlite3' exists initialize new one.
+    How will it work with Apache?
+- add checking is anyone database with results exists. 
+    If not return page with message 'add pinger.py to crontab. Wait 1 minute for first results' or something like this.
+
+"""
+######################
+
+
 from bottle import run, route, error, static_file, template, request, redirect
 import time, datetime
 import sqlite3
 import os
 import re
 
-path_to_db = 'pinger_script/'
+path_to_db = '../database/'
 
 #########
 def get_statistic_day(ip, db):
@@ -74,7 +87,7 @@ def get_date_list_when_ip_monitored(ip):
 
 def get_ip_comment_list():
     '''get list of ip adresses from monitoring base'''
-    conn = sqlite3.connect('pinger_script/pinger_db.sqlite3')
+    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
     ip_comment_list = conn.execute('select ip, comment from ip_list')
     ip_comment_list = ip_comment_list.fetchall()
     conn.close()
@@ -82,7 +95,7 @@ def get_ip_comment_list():
 
 def get_ip_list():
     '''get list of ip adresses from monitoring base'''
-    conn = sqlite3.connect('pinger_script/pinger_db.sqlite3')
+    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
     ip_list = conn.execute('select ip from ip_list')
     ip_list = ip_list.fetchall()
     ip_list = [ip[0] for ip in ip_list]
@@ -90,13 +103,13 @@ def get_ip_list():
     return ip_list
 
 def add_ip_for_monitoring(ip_addr, comment):
-    conn = sqlite3.connect('pinger_script/pinger_db.sqlite3')
+    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
     conn.execute('insert into ip_list (ip, comment) values (?, ?)', (ip_addr, comment))
     conn.commit()
     conn.close()
     
 def delete_ip_from_monitoring(ip_addr):
-    conn = sqlite3.connect('pinger_script/pinger_db.sqlite3')
+    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
     conn.execute('delete from ip_list where ip=?', (ip_addr, ))
     conn.commit()
     conn.close()
@@ -188,6 +201,4 @@ def error404(error):
 run(host='162.243.89.35', port=8888, debug=True)
 
 ###################
-
-
 ###################

@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+#####
+#
+# Add this script to crontab, set to execute every minute.
+#
+#####
+
 import time # need for calculate current time
 import os # need for start ping processes
 import sqlite3
 
 db_ip_list='pinger_db.sqlite3'
-path_to_db='/home/dvk/bottle/bootle-first/src/pinger_script/'
+path_to_db='../database/'
 ping = '/bin/ping'
 
 def initial_db(dbName):
@@ -34,7 +40,7 @@ def get_ip_list(database):
     return ipaddr_list
 
 def pinger(ip_list):
-    '''This func starts ping for each IP with "packet count" == interval and put results into database'''
+    '''This func starts ping for each IP with option -c60 and put results into database'''
     ping_processes = {}
     ping_results = {}
     cur_time = (time.strftime("%d.%m.%Y", time.localtime()), time.strftime("%H", time.localtime()), time.strftime("%M", time.localtime())) # current time (date, hour, minute)
