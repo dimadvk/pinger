@@ -1,0 +1,31 @@
+% rebase('base.html', title='Summary Statistic')
+
+            <div class='content'>
+                <span><b>Add IP</b></span>
+                <form name='add_ip' method='post'>
+                    <p>
+                        <input name='ip' type='text' size='15'><b> IP</b><br>
+                        <input name='comment' type='text' size='15'><b> Comment</b><br>
+                        <input type='submit' value='Add'>
+                    </p>
+                </form>
+                <span><b>Monitoring list</b></span><br>
+                <span>Date: {{current_date}}</span>
+                <br><br>
+                <table class='results-table'>
+                    <tr>
+                        <th>ip</th>
+                        <th>sent</th>
+                        <th>received</th>
+                        <th>loss %</th>
+                    </tr>
+                  % for row in day_statistic:
+                    <tr>
+                        <td><a href='/{{row[0]}}'>{{row[0]}}</a></td>
+                        <td>{{row[1]}}</td>
+                        <td>{{row[2]}}</td>
+                        <td>{{row[3]}}%</td>
+                    </tr>
+                  % end
+                </table>
+            </div>

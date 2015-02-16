@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <title>{{title or 'No title'}}</title>
+        <link rel="stylesheet" type="text/css" href="/static/main.css">
+    </head>
+    <body>
+        <div class='container'>
+
+            <div class='left-column'>
+                <div class='label'>
+                    <span><a href='/'><b>-- Home --</b></a></span><br><br>
+                </div>
+                <div class='ip-list-left-column'>
+                <table>
+                    % for row in ip_comment_list:
+                    <tr>
+                        <td><a href='/{{row[0]}}'>{{row[0]}}</a></td>
+                        <td><a href='/{{row[0]}}/delete'><span class='delete-ip'>delete</span></a></td>
+                    </tr>
+                    % end
+                </table>
+
+
+                <!--
+                    <ul>
+                       % for row in ip_comment_list: 
+                        <li>
+                            <a href='/{{row[0]}}'>{{row[0]}}</a>
+                            <a href='/{{row[0]}}/delete'><span class='delete-ip'>  delete</span></a>
+                        </li>
+                       % end
+                    </ul>
+                -->
+                </div>
+            </div>
+
+
+                {{!base}}
+
+            
+            <div class='clearer'>
+            </div>
+
+        </div>
+
+<!--        <div class='footer'>
+        <span>Footer :)</span>
+        </div> -->
+    </body>
+</html>
+

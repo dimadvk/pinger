@@ -1,0 +1,57 @@
+
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    font-family: "Veranda",sans-serif;
+}
+/*
+div.label{
+    font-size:1.5em;
+}
+*/
+div.container{
+    margin:auto;
+    width:940px;
+    background:#F1F1F1;
+    min-height:100%;
+}
+div.left-column{
+    float:left;
+    width:240px;
+    min-height:100px;
+    padding:20px;
+}
+div.content{
+/*    min-height:100px;*/
+    padding:20px;
+    width:620px;
+    float:right;
+}
+div.footer{
+    background:#D3D3D3;
+    height:100px;
+    float:bottom;
+    text-align:center;
+}
+div.clearer{
+    clear:both;
+}
+
+.delete-ip{
+    font-style:italic;
+    font-size:0.8em;
+    margin-left:8px;
+}
+.content table{
+    border-collapse:collapse;
+}
+.content td{
+    border-left:1px solid grey;
+    padding:4px;
+}
+.content th{
+    border-left:1px solid grey;
+    border-bottom:1px solid grey;
+    padding:2px;
+}

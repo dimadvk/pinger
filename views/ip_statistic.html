@@ -1,0 +1,33 @@
+% rebase('base.html', title='Statistic for selected IP')
+
+            <div class='content'>
+                <span><b>Monitoring results</b></span><br><br>
+                <span><b>IP:</b> {{ip_address}}</span><br>
+                <span><b>Available dates:</b></span>
+                <ul>
+                  % for date in date_list:
+                    <li><a href='/{{ip_address}}/{{date}}'>{{date}}</a></li>
+                  % end
+                </ul>
+                <span><b>Date:</b> {{monitoring_date}}</span>
+                <br><br>
+                <table>
+                    <tr>
+                        <th>Time</th>
+                        <th>IP</th>
+                        <th>Sent</th>
+                        <th>Received</th>
+                        <th>Loss %</th>
+                    </tr>
+                  % for row in ip_statistic:
+                    <tr bgcolor='{{row[5]}}'>
+                        <td>{{row[0]}}:{{row[1]}}</td>
+                        <td>{{ip_address}}</td>
+                        <td>{{row[2]}}</td>
+                        <td>{{row[3]}}</td>
+                        <td>{{row[4]}}</td>
+                    </tr>
+                  % end
+                </table>
+            </div>
+           
