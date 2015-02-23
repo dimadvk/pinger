@@ -8,7 +8,10 @@
     If no 'pinger_db.sqlite3' exists initialize new one.
     How will it work with Apache?
 - add checking is anyone database with results exists. 
-    If not return page with message 'add pinger.py to crontab. Wait 1 minute for first results' or something like this.
+    If not return page with message 'Can't find any results. Add pinger.py to crontab. Wait 1 minute for first results' or something like this.
+- move all functions (except functions with @route) from here to one specialized module-file
+- add_ip() -- if IP not added due to a wrong format return page with error message
+- if user del some IP or group return start page with a message 'group/IP deleted. Undo?'. Link 'Undo' must set group/IP back to list.
 
 """
 ######################
@@ -20,7 +23,9 @@ import sqlite3
 import os
 import re
 
-path_to_db = '../database/'
+abs_path_to_script = os.path.dirname(__file__)
+path_to_db = os.path.join(abs_path_to_script, '../database/')
+
 
 #########
 def get_statistic_day(ip, db):
@@ -143,8 +148,8 @@ def start_page():
     db_results = path_to_db+cur_date+'-results.sqlite3'
     day_statistic = []
     for ip_addr in ip_list:
-        day_resul_ip = get_statistic_day(ip_addr, db_results)
-        day_statistic.append(day_resul_ip)
+        day_result_ip = get_statistic_day(ip_addr, db_results)
+        day_statistic.append(day_result_ip)
     #
     return template('start.html', 
                     ip_comment_list=ip_comment_list, 

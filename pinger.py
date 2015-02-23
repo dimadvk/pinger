@@ -12,8 +12,10 @@ import os # need for start ping processes
 import sqlite3
 
 db_ip_list='pinger_db.sqlite3'
-path_to_db='../database/'
 ping = '/bin/ping'
+
+abs_path_to_script = os.path.dirname(__file__)
+path_to_db = os.path.join(abs_path_to_script, '../database/')
 
 def initial_db(dbName):
     conn = sqlite3.connect(dbName)
