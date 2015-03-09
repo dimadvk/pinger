@@ -1,30 +1,50 @@
 % rebase('base.html', title='Summary Statistic')
 
             <div class='content'>
-                <span><b>Add IP</b></span>
+                <span><b>-- Add IP</b></span>
                 <form name='add_ip' method='post'>
                     <p>
-                        <input name='ip' type='text' size='15'><b> IP</b><br>
-                        <input name='comment' type='text' size='15'><b> Comment</b><br>
+                        <input name='ip' id='ip' type='text' placeholder="111.111.111.111"><b> IP</b>
+                        <br>
+                        <input name='hostname' id='hostname' type='text' placeholder="hostname"><b> Hostname</b>
+                        <br>
+                        <input onclick="document.getElementById('group_name').disabled = false; 
+                                        document.getElementById('new_group_name').disabled = true;
+                                        document.getElementById('comment_group').disabled = true;" 
+                               type="radio" name="group" value="customurl" checked>
+                        <select name="group_name" id="group_name">
+                          % for row in group_list:
+                            <option>{{row[0]}}</option>
+                          % end 
+                        </select>
+                        <b> Select group</b>
+                        <br>
+                        <input onclick="document.getElementById('group_name').disabled = true;
+                                        document.getElementById('new_group_name').disabled = false;
+                                        document.getElementById('comment_group').disabled = false;" 
+                               type="radio" name="group">
+                        <input type="text" name="new_group_name" id="new_group_name" placeholder="new group name" disabled="disabled"><b> Create new group</b>
+                        <br>
+                        <textarea id="comment_group" placeholder="Comment for new group" disabled="disabled"></textarea> <b> Comment</b>
+                        <br>
                         <input type='submit' value='Add'>
                     </p>
                 </form>
-                <span><b>Monitoring list</b></span><br>
-                <span>Date: {{current_date}}</span>
-                <br><br>
-                <table class='results-table'>
+                <br>
+                <span><b>-- Monitoring list</b></span>
+                <br>
+                <br>
+                <table>
+                  % for row in group_list:
                     <tr>
-                        <th>ip</th>
-                        <th>sent</th>
-                        <th>received</th>
-                        <th>loss %</th>
+                        <td colspan='2'><a href='/{{row[0]}}'>{{row[0]}}</a></td>
                     </tr>
-                  % for row in day_statistic:
                     <tr>
-                        <td><a href='/{{row[0]}}'>{{row[0]}}</a></td>
-                        <td>{{row[1]}}</td>
-                        <td>{{row[2]}}</td>
-                        <td>{{row[3]}}%</td>
+                        <td colspan='2'>{{row[1]}}</td>
+                    </tr>
+                    <tr>
+                        <td>IP</td>
+                        <td>Hostname</td>
                     </tr>
                   % end
                 </table>

@@ -38,7 +38,7 @@ div.clearer{
     clear:both;
 }
 
-.delete-ip{
+.delete-group{
     font-style:italic;
     font-size:0.8em;
     margin-left:8px;
@@ -56,5 +56,24 @@ div.clearer{
     padding:2px;
 }
 input{
-    margin-top:2px;
+    margin-top:5px;
+}
+#ip{
+    width: 200px;
+}
+#hostname{
+    width: 200px;
+}
+
+#group_name{
+    width: 180px;
+}
+#new_group_name{
+    width: 175px;
+}
+#comment_group{
+    resize: none;
+    width:80%;
+    height: 100px;
+    margin-top:5px;
 }

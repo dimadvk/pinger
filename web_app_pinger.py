@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding:utf-8
 
+# shpargalka
+# create table group_list(id integer primary key AUTOINCREMENT, group_name text, group_comment text);
+# create table ip_list(id integer primary key AUTOINCREMENT, ip text, hostname text, group_name text);
 
 ##### To Do List #####
 """
@@ -28,6 +31,7 @@ path_to_db = os.path.join(abs_path_to_script, '../database/')
 
 
 #########
+""" not in use 
 def get_statistic_day(ip, db):
     '''get a summary day monitoring statistic for ip (ip, sent, received, loss)'''
     conn = sqlite3.connect(db)
@@ -42,6 +46,7 @@ def get_statistic_day(ip, db):
         loss = (transmitted - received)*100/transmitted
     day_result = (ip, int(transmitted), int(received), int(loss))
     return day_result
+"""
 
 def get_statistic_ip(ip, db):
     '''get a day monitoring statistic for ip [[hour, minutes, sent, received, loss, color], ... ]'''
@@ -89,14 +94,21 @@ def get_date_list_when_ip_monitored(ip):
             date_list.append(date)
     return date_list
  
+def get_group_list():
+    '''get group list from base as [(group1, comment1), (group2, comment2), ...]'''
+    group_list = []
+    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+    group_list = conn.execute('select group_name, group_comment from group_list')
+    group_list = group_list.fetchall()
+    return group_list
 
-def get_ip_comment_list():
+def get_ip_hostname_list():
     '''get list of ip adresses from monitoring base'''
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    ip_comment_list = conn.execute('select ip, comment from ip_list')
-    ip_comment_list = ip_comment_list.fetchall()
+    ip_hostname_list = conn.execute('select ip, hostname from ip_list')
+    ip_hostname_list = ip_hostname_list.fetchall()
     conn.close()
-    return ip_comment_list
+    return ip_hostname_list
 
 def get_ip_list():
     '''get list of ip adresses from monitoring base'''
@@ -107,9 +119,9 @@ def get_ip_list():
     conn.close()
     return ip_list
 
-def add_ip_for_monitoring(ip_addr, comment):
+def add_ip_for_monitoring(ip_addr, hostname):
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    conn.execute('insert into ip_list (ip, comment) values (?, ?)', (ip_addr, comment))
+    conn.execute('insert into ip_list (ip, hostname) values (?, ?)', (ip_addr, hostname))
     conn.commit()
     conn.close()
     
@@ -142,28 +154,19 @@ def server_static(filename):
 
 @route('/')
 def start_page():
-    ip_list = get_ip_list()
-    ip_comment_list = get_ip_comment_list()
-    cur_date = time.strftime("%d.%m.%Y", time.localtime())
-    db_results = path_to_db+cur_date+'-results.sqlite3'
-    day_statistic = []
-    for ip_addr in ip_list:
-        day_result_ip = get_statistic_day(ip_addr, db_results)
-        day_statistic.append(day_result_ip)
-    #
+    group_list = get_group_list()
+
     return template('start.html', 
-                    ip_comment_list=ip_comment_list, 
-                    day_statistic=day_statistic, 
-                    current_date=cur_date)
+                    group_list = group_list)
 
 @route('/', method='POST')
 def add_ip():
     ip_addr = request.forms.get('ip')
-    ip_addr = re.sub('[ ]', '', ip_addr)
-    comment = request.forms.get('comment')
+    ip_addr = re.sub('[ ]', '', ip_addr) # just clear any ' ' from string
+    hostname = request.forms.get('hostname').decode('utf-8') # .decode('utf-8') - it needs for sqlite3 accepting cyrillic symbols
     ip_list = get_ip_list()
     if (ip_addr not in ip_list) and check_format_ip(ip_addr):
-       add_ip_for_monitoring(ip_addr, comment)
+       add_ip_for_monitoring(ip_addr, hostname)
     return start_page()
 
 @route('/<ip_address>')
@@ -175,7 +178,7 @@ def get_statistic_one_ip(ip_address, date=''):
         monitoring_date = date
     else:
         monitoring_date = time.strftime("%d.%m.%Y", time.localtime())
-    ip_comment_list = get_ip_comment_list()
+    ip_hostname_list = get_ip_hostname_list()
     date_list = get_date_list_when_ip_monitored(ip_address)
     date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%d.%m.%Y'))
     if monitoring_date in date_list:
@@ -187,7 +190,7 @@ def get_statistic_one_ip(ip_address, date=''):
                     ip_address=ip_address,
                     ip_statistic=ip_statistic, 
                     monitoring_date=monitoring_date, 
-                    ip_comment_list=ip_comment_list,
+                    ip_hostname_list=ip_hostname_list,
                     date_list=date_list)
 
 @route('/<ip_address>/delete')
