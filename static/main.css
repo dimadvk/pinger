@@ -5,11 +5,6 @@ html,body{
     height:100%;
     font-family: "Veranda",sans-serif;
 }
-/*
-div.label{
-    font-size:1.5em;
-}
-*/
 div.container{
     margin:auto;
     width:940px;
@@ -23,7 +18,6 @@ div.left-column{
     padding:20px;
 }
 div.content{
-/*    min-height:100px;*/
     padding:20px;
     width:620px;
     float:right;
@@ -38,16 +32,41 @@ div.clearer{
     clear:both;
 }
 
-.delete-group{
+span.delete-group{
     font-style:italic;
     font-size:0.8em;
     margin-left:8px;
 }
+
+.left-group-list{
+    width:220px;
+    border-collapse:collapse;
+}
+.left-group-list-line-1{
+    background:#E8E8E8;
+}
+.left-group-list-th{
+    text-align:left;
+}
+.left-group-list-group{
+    text-align:left;
+}
+.left-group-list-del{
+    text-align: right;
+    width: 20px
+}
+
+form{
+    margin-top:20px;
+}
+
+/*
+monitoting list
+*/
 .content table{
     border-collapse:collapse;
 }
 .content td{
-    border-left:1px solid grey;
     padding:4px;
 }
 .content th{
@@ -55,25 +74,47 @@ div.clearer{
     border-bottom:1px solid grey;
     padding:2px;
 }
+.mon-list-groupname{
+    background: #DFDFDF;
+    margin-top:200px;
+}
+.mon-list-comment{
+    background: #E8E8E8;
+    font-size: 0.9em;
+}
+
+.warning_packetloss_level1 tr{
+    background: #FFACC3;
+}
+.warning_packetloss_level2 tr{
+    background: #FF6A66;
+}
+
 input{
     margin-top:5px;
 }
 #ip{
-    width: 200px;
+    width: 220px;
 }
 #hostname{
-    width: 200px;
+    width: 220px;
 }
 
 #group_name{
-    width: 180px;
+    width: 200px;
 }
 #new_group_name{
-    width: 175px;
+    width: 195px;
 }
-#comment_group{
+#group_comment{
     resize: none;
     width:80%;
-    height: 100px;
+    height: 80px;
     margin-top:5px;
 }
+
+#error_message{
+    background: #FF6A66;
+    padding: 10px 0 10px 5px;
+}
+

@@ -14,14 +14,21 @@
                     <span><a href='/'><b>-- Home --</b></a></span><br><br>
                 </div>
                 <div class='ip-list-left-column'>
-                <table>
+                <table class='left-group-list'>
                     <tr>
-                        <th>Groups:</th>
+                        <th class='left-group-list-th' colspan='2'>Groups:</th>
                     </tr>
+                    <%
+                        i = 1
+                    %>
                   % for row in group_list:
-                    <tr>
-                        <td><a href='/{{row[0]}}'>{{row[0]}}</a></td>
-                        <td><a href='/{{row[0]}}/delete'><span class='delete-group'>delete</span></a></td>
+                    <%
+                        x = (2+i)%2
+                        i += 1
+                    %>
+                    <tr class='left-group-list-line-{{x}}'>
+                        <td class='left-group-list-group'><a href='/{{row[0]}}'>{{row[1]}}</a></td>
+                        <td class='left-group-list-del'><a href='/{{row[0]}}/delete'><span class='delete-group'>del</span></a></td>
                     </tr>
                   % end
                 </table>

@@ -61,9 +61,9 @@ def get_statistic_ip(ip, db):
         if packetloss_count ==0:
             row.append('')
         elif 0 < packetloss_count < 6:
-            row.append('#FFACC3')
+            row.append('warning_packetloss_level1')
         elif packetloss_count >= 6:
-            row.append('#FF6A66')
+            row.append('warning_packetloss_level2')
         statistic_ip.append(row)
     return statistic_ip
 
@@ -92,42 +92,57 @@ def get_date_list_when_ip_monitored(ip):
         if get_ip:
             date = re.sub('-results.sqlite3$', '', base_name)
             date_list.append(date)
+    date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%d.%m.%Y'))
     return date_list
  
-def get_group_list():
-    '''get group list from base as [(group1, comment1), (group2, comment2), ...]'''
+def get_group_and_comment_list():
+    '''get group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]'''
     group_list = []
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    group_list = conn.execute('select group_name, group_comment from group_list')
+    group_list = conn.execute('select id, group_name, group_comment from group_list')
     group_list = group_list.fetchall()
     return group_list
 
-def get_ip_hostname_list():
+def get_ip_hostname_groupname_list():
     '''get list of ip adresses from monitoring base'''
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    ip_hostname_list = conn.execute('select ip, hostname from ip_list')
+    ip_hostname_list = conn.execute('select ip, hostname, group_name from ip_list')
     ip_hostname_list = ip_hostname_list.fetchall()
     conn.close()
-    return ip_hostname_list
+    return ip_hostname_groupname_list 
 
-def get_ip_list():
-    '''get list of ip adresses from monitoring base'''
+def get_group_ip_list(group_name):
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    ip_list = conn.execute('select ip from ip_list')
-    ip_list = ip_list.fetchall()
-    ip_list = [ip[0] for ip in ip_list]
+    group_ip_list = conn.execute('select ip, hostname from ip_list where group_name=?', (group_name, ))
+    group_ip_list = group_ip_list.fetchall()
     conn.close()
-    return ip_list
+    return group_ip_list
 
-def add_ip_for_monitoring(ip_addr, hostname):
+def add_ip_for_monitoring(ip_addr, hostname, group_name):
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    conn.execute('insert into ip_list (ip, hostname) values (?, ?)', (ip_addr, hostname))
+    conn.execute('insert into ip_list (ip, hostname, group_name) values (?, ?, ?)', (ip_addr, hostname, group_name))
+    conn.commit()
+    conn.close()
+
+def add_group(group_name, group_comment):
+    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+    conn.execute('insert into group_list (group_name, group_comment) values (?, ?)', (group_name, group_comment))
+    conn.commit()
+    conn.close()
+
+def delete_group_from_monitoring(group_id):
+    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+    group_name = conn.execute('select group_name from group_list where id=?', (group_id, ))
+    group_name = group_name.fetchall()
+    group_name = group_name[0][0]
+    conn.execute('delete from group_list where id=?', (group_id, ))
+    conn.execute('delete from ip_list where group_name=?', (group_name, ))
     conn.commit()
     conn.close()
     
-def delete_ip_from_monitoring(ip_addr):
+def delete_ip_from_monitoring(ip_addr, group_name):
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    conn.execute('delete from ip_list where ip=?', (ip_addr, ))
+    conn.execute('delete from ip_list where ip=?, group_name=?', (ip_addr, group_name))
     conn.commit()
     conn.close()
     
@@ -153,21 +168,56 @@ def server_static(filename):
     return static_file(filename, root='./static/')
 
 @route('/')
-def start_page():
-    group_list = get_group_list()
-
+def start_page(error_message=''):
+    monitoring_list = []
+    group_list = get_group_and_comment_list() # [(group_name, comment), ...]
+    for group in group_list:
+        group_name = group[1]
+        group_ip_list = get_group_ip_list(group_name) # [(ip, hostname), ...]
+        monitoring_list.append([group, group_ip_list]) # [[(group_id, group_name, comment), [(ip, hostname), ...]], ...]
     return template('start.html', 
-                    group_list = group_list)
+                    group_list = group_list,
+                    monitoring_list = monitoring_list,
+                    error_message=error_message)
 
 @route('/', method='POST')
 def add_ip():
+    error_message = ''
     ip_addr = request.forms.get('ip')
     ip_addr = re.sub('[ ]', '', ip_addr) # just clear any ' ' from string
     hostname = request.forms.get('hostname').decode('utf-8') # .decode('utf-8') - it needs for sqlite3 accepting cyrillic symbols
-    ip_list = get_ip_list()
-    if (ip_addr not in ip_list) and check_format_ip(ip_addr):
-       add_ip_for_monitoring(ip_addr, hostname)
-    return start_page()
+    selected_group_name = request.forms.get('group_name')
+    new_group_name = request.forms.get('new_group_name')
+    new_group_comment = request.forms.get('group_comment')
+    if selected_group_name: # if user want to add ip with one of existing group
+        selected_group_name = selected_group_name.decode('utf-8')
+        group_ip_list = get_group_ip_list(selected_group_name) # [(ip_1, hostname_1), (ip_2, hostname_2), ...]
+        group_ip_list = [x[0] for x in group_ip_list] # [ip_1, ip_2, ...]
+        if not check_format_ip(ip_addr):
+            error_message = 'wrong format of IP'
+        elif ip_addr in group_ip_list:
+            error_message = 'IP "'+ ip_addr +'" already exists in that group'
+        else:
+            add_ip_for_monitoring(ip_addr, hostname, selected_group_name)
+    elif new_group_name: # if user enter a new group name
+        new_group_name = new_group_name.decode('utf-8')
+        group_list = get_group_and_comment_list() # it gains [(id_1, group1, comment1), (id_2, group2, comment2)]
+        group_list = [x[1] for x in group_list] # it makes group_list == [group1, group2]
+        if new_group_name in group_list:
+            error_message = 'the group with the name "'+ new_group_name + '" already exists'
+        elif not check_format_ip(ip_addr):
+            error_message = 'wrong format of IP'
+        else:
+            if new_group_comment:
+                new_group_comment = new_group_comment.decode('utf-8')
+            else:
+                new_group_comment = 'not commented'
+            add_group(new_group_name, new_group_comment)
+            add_ip_for_monitoring(ip_addr, hostname, new_group_name)
+    else:
+        error_message = 'create a new group'
+    return start_page(error_message)
+
 
 @route('/<ip_address>')
 @route('/<ip_address>/<date:re:(3[01]|2[0-9]|[01][0-9])\.(1[012]|0[1-9])\.([12][0-9][0-9][0-9])>')
@@ -180,7 +230,6 @@ def get_statistic_one_ip(ip_address, date=''):
         monitoring_date = time.strftime("%d.%m.%Y", time.localtime())
     ip_hostname_list = get_ip_hostname_list()
     date_list = get_date_list_when_ip_monitored(ip_address)
-    date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%d.%m.%Y'))
     if monitoring_date in date_list:
         db = path_to_db + monitoring_date + '-results.sqlite3'
         ip_statistic = get_statistic_ip(ip_address, db)
@@ -193,12 +242,15 @@ def get_statistic_one_ip(ip_address, date=''):
                     ip_hostname_list=ip_hostname_list,
                     date_list=date_list)
 
-@route('/<ip_address>/delete')
-def delete_ip(ip_address):
-    ip_list = get_ip_list()
-    if ip_address not in ip_list:
-        return redirect('/')
-    delete_ip_from_monitoring(ip_address)
+@route('/<group_id>/delete')
+def delete_group(group_id):
+    group_id = int(group_id)
+    group_list = get_group_and_comment_list()
+    group_id_list = [x[0] for x in group_list ]
+    if group_id not in group_id_list:
+        error_message = "can't find group with id '"+ group_id +"'"
+        return start_page(error_message)
+    delete_group_from_monitoring(group_id)
     return redirect('/')
 
 
