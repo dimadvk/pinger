@@ -1,13 +1,22 @@
-% rebase('base.html', title='Summary Statistic')
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Pinger - Monitoring List</title>
+        <link rel="stylesheet" type="text/css" href="/static/main.css">
+    </head>
+    <body>
+        <div class='container'>
 
             <div class='content'>
               % if error_message:
-                <p id='error_message'>
-                <span><b>Error:</b> {{error_message}}</span>
-                </p>
+                <div class='error_message'>
+                    <span><b>Error:</b> {{error_message}}</span>
+                </div>
               % end
-                <span><b><u>-- Add IP</u></b></span>
-                <form name='add_ip' method='post'>
+                <span><b>-- Add IP</b></span>
+                <form class='form-add-ip'name='add_ip' method='post'>
                     <p>
                         <input name='ip' id='ip' type='text' placeholder="111.111.111.111"><b> IP</b>
                         <br>
@@ -44,24 +53,42 @@
                     </p>
                 </form>
                 <br>
-                <span><b><u>-- Monitoring list</u></b></span>
+                <span><b>-- Monitoring list</b></span>
                 <br>
                 <br>
                 <table>
                   % for row in monitoring_list:
+                    <tr>
+                        <td class='mon-list-separator' colspan='2'>-</td>
+                    </tr>
                     <tr>
                         <td class='mon-list-groupname' colspan='2'><a href='/{{row[0][0]}}'>{{row[0][1]}}</a></td>
                     </tr>
                     <tr>
                         <td class='mon-list-comment' colspan='2'>{{row[0][2]}}</td>
                     </tr>
+                    <%
+                        i = 2
+                    %>
                     % for element in row[1]:
-                        <tr>
-                            <td><a href='/{{row[0][0]}}/{{element[0]}}' >{{element[0]}}</a></td>
-                            <td>{{element[1]}}</td>
+                    <%
+                        x = i%2
+                        i += 1
+                    %>
+                        <tr class='mon-list-ip-row{{x}}'>
+                            <td class='mon-list-ipaddr'><a href='/{{row[0][0]}}/{{element[0]}}' >{{element[0]}}</a></td>
+                            <td class='mon-list-hostname'>{{element[1]}}</td>
                         </tr>
                      % end
                     </tr>
                   % end
                 </table>
             </div>
+
+            
+            <div class='clearer'>
+            </div>
+        </div>
+    </body>
+</html>
+

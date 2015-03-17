@@ -7,20 +7,15 @@ html,body{
 }
 div.container{
     margin:auto;
-    width:940px;
+    width:800px;
     background:#F1F1F1;
     min-height:100%;
 }
-div.left-column{
-    float:left;
-    width:240px;
-    min-height:100px;
-    padding:20px;
-}
 div.content{
-    padding:20px;
-    width:620px;
-    float:right;
+    padding:2em 0 4em 0;
+    width:100%;
+/*    float:right;*/
+    float:center;
 }
 div.footer{
     background:#D3D3D3;
@@ -32,63 +27,12 @@ div.clearer{
     clear:both;
 }
 
-span.delete-group{
-    font-style:italic;
-    font-size:0.8em;
-    margin-left:8px;
-}
-
-.left-group-list{
-    width:220px;
-    border-collapse:collapse;
-}
-.left-group-list-line-1{
-    background:#E8E8E8;
-}
-.left-group-list-th{
-    text-align:left;
-}
-.left-group-list-group{
-    text-align:left;
-}
-.left-group-list-del{
-    text-align: right;
-    width: 20px
-}
-
-form{
-    margin-top:20px;
-}
-
 /*
-monitoting list
+----------- form
 */
-.content table{
-    border-collapse:collapse;
+.form-add-ip{
+    margin-left:20px;
 }
-.content td{
-    padding:4px;
-}
-.content th{
-    border-left:1px solid grey;
-    border-bottom:1px solid grey;
-    padding:2px;
-}
-.mon-list-groupname{
-    background: #DFDFDF;
-}
-.mon-list-comment{
-    background: #E8E8E8;
-    font-size: 0.9em;
-}
-
-.warning_packetloss_level1 tr{
-    background: #FFACC3;
-}
-.warning_packetloss_level2 tr{
-    background: #FF6A66;
-}
-
 input{
     margin-top:5px;
 }
@@ -107,13 +51,60 @@ input{
 }
 #group_comment{
     resize: none;
-    width:80%;
+    width:400px;
     height: 80px;
     margin-top:5px;
 }
 
-#error_message{
+/*
+----------- monitoting list
+*/
+.content table{
+    border-collapse:collapse;
+}
+td{
+    padding:2px;
+}
+.mon-list-separator{
+    background: #D0D0D0;
+}
+.mon-list-groupname{
+    background: #DFDFDF;
+    font-weight:bold;
+    padding-left:5px;
+}
+.mon-list-comment{
+    background: #DFDFDF;
+    font-size: 0.9em;
+    padding-left:10px;
+}
+.mon-list-ipaddr{
+    padding-left:20px;
+    width:200px;
+}
+.mon-list-ip-row0{
+}
+.mon-list-ip-row1{
+    background: #E8E8E8;
+}
+
+/*
+----------- results table
+*/
+.warning_packetloss_level1 tr{
+    background: #FFACC3;
+}
+.warning_packetloss_level2 tr{
     background: #FF6A66;
-    padding: 10px 0 10px 5px;
+}
+
+
+/*
+----------- additional...
+*/
+
+.error_message{
+    background:#FF6A66;
+    padding: 10px 0px 10px 5px;
 }
 

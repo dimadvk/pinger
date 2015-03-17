@@ -3,46 +3,15 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>{{title or 'No title'}}</title>
+        <title>Some Title</title>
         <link rel="stylesheet" type="text/css" href="/static/main.css">
     </head>
     <body>
         <div class='container'>
 
-            <div class='left-column'>
-                <div class='label'>
-                    <span><a href='/'><b>-- Home --</b></a></span><br><br>
-                </div>
-                <div class='ip-list-left-column'>
-                <table class='left-group-list'>
-                    <tr>
-                        <th class='left-group-list-th' colspan='2'>Groups:</th>
-                    </tr>
-                    <%
-                        i = 1
-                    %>
-                  % for row in group_list:
-                    <%
-                        x = (2+i)%2
-                        i += 1
-                    %>
-                    <tr class='left-group-list-line-{{x}}'>
-                        <td class='left-group-list-group'><a href='/{{row[0]}}'>{{row[1]}}</a></td>
-                        <td class='left-group-list-del'><a href='/{{row[0]}}/delete'><span class='delete-group'>del</span></a></td>
-                    </tr>
-                  % end
-                </table>
-
-                </div>
-            </div>
-
-
-                {{!base}}
-
             
             <div class='clearer'>
             </div>
-
         </div>
     </body>
 </html>

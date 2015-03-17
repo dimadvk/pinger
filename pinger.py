@@ -39,7 +39,7 @@ def get_ip_list(database):
     ipaddr_list = []
     for ip in get_ip:
         ipaddr_list.append(ip[0])
-    ipaddr_list = list(set(ipaddr_list)) # remove dublicates of IP
+    ipaddr_list = list(set(ipaddr_list)) # remove dublicate IP addresses
     return ipaddr_list
 
 def pinger(ip_list):
