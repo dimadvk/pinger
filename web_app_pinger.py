@@ -31,22 +31,6 @@ path_to_db = os.path.join(abs_path_to_script, '../database/')
 
 
 #########
-""" not in use 
-def get_statistic_day(ip, db):
-    '''get a summary day monitoring statistic for ip (ip, sent, received, loss)'''
-    conn = sqlite3.connect(db)
-    get_results_ip = conn.execute('select * from ping_results where ip=?', (ip, ))
-    get_results_ip = get_results_ip.fetchall()
-    conn.close()
-    transmitted, received, loss = 0.0, 0.0, 0.0
-    for record in get_results_ip:
-        transmitted = transmitted + int(record[2])
-        received = received + int(record[3])
-    if transmitted > 0:
-        loss = (transmitted - received)*100/transmitted
-    day_result = (ip, int(transmitted), int(received), int(loss))
-    return day_result
-"""
 
 def get_statistic_ip(ip, db):
     '''get a day monitoring statistic for ip [[hour, minutes, sent, received, loss, color], ... ]'''
@@ -95,21 +79,16 @@ def get_date_list_when_ip_monitored(ip):
     date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%d.%m.%Y'))
     return date_list
  
-def get_group_and_comment_list():
+def get_group_and_comment_list(group_id=''):
     '''get group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]'''
     group_list = []
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    group_list = conn.execute('select id, group_name, group_comment from group_list')
+    if group_id:
+        group_list = conn.execute('select id, group_name, group_comment from group_list where id=?', (group_id, ))
+    else:
+        group_list = conn.execute('select id, group_name, group_comment from group_list')
     group_list = group_list.fetchall()
     return group_list
-
-def get_ip_hostname_groupname_list():
-    '''get list of ip adresses from monitoring base'''
-    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    ip_hostname_list = conn.execute('select ip, hostname, group_name from ip_list')
-    ip_hostname_list = ip_hostname_list.fetchall()
-    conn.close()
-    return ip_hostname_groupname_list 
 
 def get_group_ip_list(group_name):
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
@@ -165,7 +144,10 @@ def check_format_date(date):
 
 @route('/static/<filename>')
 def server_static(filename):
-    return static_file(filename, root='./static/')
+    return static_file(filename, root='./static/css/')
+@route('/img/<filename>')
+def img(filename):
+    return static_file(filename, root='./static/img/')
 
 @route('/')
 def start_page(error_message=''):
@@ -218,31 +200,44 @@ def add_ip():
         error_message = 'create a new group'
     return start_page(error_message)
 
+@route('/<group_id:re:\d*>')
+@route('/<group_id:re:\d*>/<ip_address:re:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}>')
+@route('/<group_id:re:\d*>/<ip_address:re:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}>/<date:re:(3[01]|2[0-9]|[01][0-9])\.(1[012]|0[1-9])\.([12][0-9][0-9][0-9])>')
+def show_statistic(group_id, ip_address='', date=''):
+    group_info = []
+    group_id_name_comment = get_group_and_comment_list(group_id)
+    if not group_id_name_comment:
+        error_message = 'there is no group with id ' + group_id
+        return start_page(error_message)
+    else:
+        group_info.append(group_id_name_comment[0])
+    group_name = group_id_name_comment[0][1]
+    group_ip_list = get_group_ip_list(group_name)
+    group_info.append(group_ip_list)
 
-@route('/<ip_address>')
-@route('/<ip_address>/<date:re:(3[01]|2[0-9]|[01][0-9])\.(1[012]|0[1-9])\.([12][0-9][0-9][0-9])>')
-def get_statistic_one_ip(ip_address, date=''):
-    if not check_format_ip(ip_address):
-        return redirect('/')
+    if ip_address:
+        if not check_format_ip(ip_address):
+            return redirect('/'+group_id)
+        
     if date and check_format_date(date):
         monitoring_date = date
     else:
         monitoring_date = time.strftime("%d.%m.%Y", time.localtime())
-    ip_hostname_list = get_ip_hostname_list()
     date_list = get_date_list_when_ip_monitored(ip_address)
     if monitoring_date in date_list:
         db = path_to_db + monitoring_date + '-results.sqlite3'
         ip_statistic = get_statistic_ip(ip_address, db)
     else:
         ip_statistic = []
+
     return template('ip_statistic.html',
-                    ip_address=ip_address,
+                    group_info=group_info, # group_info = [(group_id, group_name, group_comment), [(ip, hostname), ...]]
                     ip_statistic=ip_statistic, 
                     monitoring_date=monitoring_date, 
-                    ip_hostname_list=ip_hostname_list,
+                    ip_address=ip_address,
                     date_list=date_list)
 
-@route('/<group_id>/delete')
+@route('/<group_id:re:\d*>/delete')
 def delete_group(group_id):
     group_id = int(group_id)
     group_list = get_group_and_comment_list()
