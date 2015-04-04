@@ -5,6 +5,10 @@ html,body{
     height:100%;
     font-family: "Veranda",sans-serif;
 }
+.header{
+    padding:20px;
+    background:#D3D3D3;
+}
 div.container{
     margin:auto;
     width:800px;
@@ -63,13 +67,16 @@ input{
     border-collapse:collapse;
 }
 td{
-    padding:2px;
+    padding:2px 0 2px 0;
 }
 .mon-list-separator{
     background: #D0D0D0;
+    width:800px
+}
+.mon-list-groupname-row{
+    background: #DFDFDF;
 }
 .mon-list-groupname{
-    background: #DFDFDF;
     font-weight:bold;
     padding-left:5px;
 }
@@ -80,21 +87,37 @@ td{
 }
 .mon-list-ipaddr{
     padding-left:20px;
-    width:200px;
+    width:160px;
 }
 .mon-list-ip-row0{
 }
 .mon-list-ip-row1{
     background: #E8E8E8;
 }
+.td-edit-img{
+    width:22px;
+}
+.td-delete-img{
+    width:20px;
+    padding-right:0px;
+}
 
 /*
 ----------- results table
 */
-.warning_packetloss_level1 tr{
+.table-results{
+    text-align:center;
+}
+.column-time{
+    width:100px;
+}
+th{
+    padding:2px;
+}
+.warning_packetloss_level1{
     background: #FFACC3;
 }
-.warning_packetloss_level2 tr{
+.warning_packetloss_level2{
     background: #FF6A66;
 }
 
@@ -104,6 +127,7 @@ td{
 */
 
 .error_message{
+    margin-top:1px;
     background:#FF6A66;
     padding: 10px 0px 10px 5px;
 }

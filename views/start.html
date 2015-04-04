@@ -6,21 +6,24 @@
         <title>Pinger - Monitoring List</title>
         <link rel="stylesheet" type="text/css" href="/static/main.css">
     </head>
-    <body>
+    <body link='#27292A' vlink='#27292A'>
         <div class='container'>
+            <div class='header'>
+            <span><a href='/'><b>Home</b></a><span>
+            </div>
+          % if error_message:
+            <div class='error_message'>
+                <span><b>Error:</b> {{error_message}}</span>
+            </div>
+          % end
 
             <div class='content'>
-              % if error_message:
-                <div class='error_message'>
-                    <span><b>Error:</b> {{error_message}}</span>
-                </div>
-              % end
                 <span><b>-- Add IP</b></span>
-                <form class='form-add-ip'name='add_ip' method='post'>
+                <form class='form-add-ip' name='add_ip' method='post'>
                     <p>
                         <input name='ip' id='ip' type='text' placeholder="111.111.111.111"><b> IP</b>
                         <br>
-                        <input name='hostname' id='hostname' type='text' maxlength="35" placeholder="hostname"><b> Hostname</b>
+                        <input name='hostname' id='hostname' type='text' maxlength="38" placeholder="hostname"><b> Hostname</b>
                         <br>
                         <input onclick="document.getElementById('group_name').disabled = false; 
                                         document.getElementById('new_group_name').disabled = true;
@@ -40,7 +43,7 @@
                                name="new_group_name" 
                                id="new_group_name" 
                                placeholder="new group name"
-                               maxlength="15"
+                               maxlength="40"
                                disabled="disabled"><b> Create new group</b>
                         <br>
                         <textarea name='group_comment' 
@@ -59,13 +62,21 @@
                 <table>
                   % for row in monitoring_list:
                     <tr>
-                        <td class='mon-list-separator' colspan='2'>-</td>
+                        <td class='mon-list-separator' colspan='4'>-</td>
+                    </tr>
+                    <tr class='mon-list-groupname-row'>
+                        <td class='mon-list-groupname' colspan='2'>
+                            <a href='/{{row[0][0]}}'>{{row[0][1]}}</a>
+                        </td>
+                        <td class='td-edit-img'>
+                            <a href='/{{row[0][0]}}/edit'><img src='/img/edit.png' width=20 height=20></a>
+                        </td>
+                        <td class='td-delete-img'>
+                            <a href='/{{row[0][0]}}/delete'><img src='/img/delete.png' width=20 height=20></a>
+                        </td>
                     </tr>
                     <tr>
-                        <td class='mon-list-groupname' colspan='2'><a href='/{{row[0][0]}}'>{{row[0][1]}}</a></td>
-                    </tr>
-                    <tr>
-                        <td class='mon-list-comment' colspan='2'>{{row[0][2]}}</td>
+                        <td class='mon-list-comment' colspan='4'>{{row[0][2]}}</td>
                     </tr>
                     <%
                         i = 2
@@ -76,8 +87,20 @@
                         i += 1
                     %>
                         <tr class='mon-list-ip-row{{x}}'>
-                            <td class='mon-list-ipaddr'><a href='/{{row[0][0]}}/{{element[0]}}' >{{element[0]}}</a></td>
-                            <td class='mon-list-hostname'>{{element[1]}}</td>
+                            <td class='mon-list-ipaddr'>
+                                <a href='/{{row[0][0]}}/{{element[0]}}' >{{element[0]}}</a>
+                            </td>
+                            <td class='mon-list-hostname'>
+                                {{element[1]}}
+                            </td>
+                            <td>
+                            </td>
+                            <td class='td-delete-img'>
+                                <a href='/{{row[0][0]}}/{{element[0]}}/delete'><img src='/img/delete.png' 
+                                                                      width=20 
+                                                                      height=20></a>
+                            </td>
+
                         </tr>
                      % end
                     </tr>
