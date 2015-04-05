@@ -26,7 +26,8 @@
                             <a href='/{{group_info[0][0]}}/edit'><img src='/img/edit.png' width=20 height=20></a>
                         </td>
                         <td class='td-delete-img'>
-                            <a href='/{{group_info[0][0]}}/delete'><img src='/img/delete.png' width=20 height=20></a>
+                            <a href='/{{group_info[0][0]}}?action=delete_group&group_id={{group_info[0][0]}}'><img src='/img/delete.png' 
+                                                                                                             width=20 height=20></a>
                         </td>
                     </tr>
                     <tr>
@@ -50,9 +51,10 @@
                             <td>
                             </td>
                             <td class='td-delete-img'>
-                                <a href='/{{element[0]}}/delete'><img src='/img/delete.png' 
-                                                                      width=20 
-                                                                      height=20></a>
+                                <a href='/{{group_info[0][0]}}?action=delete_ip&group_id={{group_info[0][0]}}&ip_addr={{element[0]}}'><img 
+                                                                                                                        src='/img/delete.png'
+                                                                                                                        width=20 
+                                                                                                                        height=20></a>
                             </td>
 
                         </tr>
