@@ -61,6 +61,21 @@ input{
 }
 
 /*
+----------- edit group
+*/
+#edit-group-name{
+    margin-left:10px;
+    }
+#form-edit-group{
+    margin-left:10px;
+}
+#edit-group-comment{
+    resize: none;
+    width:400px;
+    height: 80px;
+    margin-top:5px;
+}
+/*
 ----------- monitoting list
 */
 .content table{

@@ -28,6 +28,7 @@ import re
 
 abs_path_to_script = os.path.dirname(__file__)
 path_to_db = os.path.join(abs_path_to_script, '../database/')
+#path_to_db = '/home/dvk/bottle/bottle-first/src/database/'
 
 
 #########
@@ -90,6 +91,13 @@ def get_group_and_comment_list(group_id=''):
     group_list = group_list.fetchall()
     return group_list
 
+def update_group_comment(group_id, group_comment):
+    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+    conn.execute('update group_list set group_comment=? where id=?', (group_comment, group_id))
+    conn.commit()
+    conn.close()
+
+
 def get_group_ip_list(group_name):
     """it returns list [(ip, hostname), (ip2, hostname2) ... ]"""
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
@@ -146,8 +154,8 @@ def check_format_date(date):
 
 @route('/test')
 def test():
-    request.query.action
-    return request.path, request.query.action
+   
+    return request.path
 
 @route('/static/<filename>')
 def server_static(filename):
@@ -293,20 +301,29 @@ def show_statistic(group_id, ip_address='', date=''):
                     date_list=date_list)
 
 @route('/<group_id:re:\d*>/edit')
-def delete_group(group_id):
+def edit_group(group_id):
     group_id = int(group_id)
-    group_list = get_group_and_comment_list()
-    group_id_list = [x[0] for x in group_list ]
-    if group_id not in group_id_list:
+    group_and_comment = get_group_and_comment_list(group_id) # it returns [(group_id, group_name, group_comment)]
+    group_and_comment = group_and_comment[0]    # it makes (group_id, group_name, group_comment)
+    if not group_and_comment:
         return redirect('/')
-    return redirect('/')
+    return template('edit_group.html', 
+                    group_and_comment=group_and_comment)
 
+@route('/<group_id:re:\d*>/edit', method='POST')
+def edit_group_save(group_id):
+    group_id = int(group_id)
+    group_comment = request.forms.get('edit-group-comment').decode('utf-8')
+    update_group_comment(group_id, group_comment)
+    return redirect('/')
+    
 
 @error(404)
 def error404(error):
     return '<h1>Page not found. Error 404.</h1> <span>path: ' + request.path + '</span>' 
 
 run(host='162.243.89.35', port=8888, debug=True)
+#run(server='cgi')
 
 ###################
 ###################
