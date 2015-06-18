@@ -5,6 +5,11 @@
 # create table group_list(id integer primary key AUTOINCREMENT, group_name text, group_comment text);
 # create table ip_list(id integer primary key AUTOINCREMENT, ip text, hostname text, group_name text);
 
+"""
+select hour, ip, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sent) as loss from ping_results  group by ip, hour order by ip;
+"""
+
+
 ##### To Do List #####
 """
 - add checkin is database 'pinger_db.sqlite3' exists when server starts.
@@ -34,15 +39,19 @@ path_to_db = os.path.join(abs_path_to_script, '../database/')
 #########
 
 def get_statistic_ip(ip, db):
-    '''get a day monitoring statistic for ip [[hour, minutes, sent, received, loss, color], ... ]'''
+    '''get a day monitoring statistic for ip [[hour, sent, received, loss, hour_num, warning_level], ... ]'''
     conn = sqlite3.connect(db)
-    get_results_ip = conn.execute('select hour, minutes, sent, received, loss from ping_results where ip=?', (ip, ))
+#    get_results_ip = conn.execute('select hour, minutes, sent, received, loss from ping_results where ip=?', (ip, ))
+    get_results_ip = conn.execute('select hour, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sent) as loss from ping_results where ip=? group by hour', (ip, ))
     get_results_ip = get_results_ip.fetchall()
     conn.close()
     statistic_ip = []
     for row in get_results_ip:
         row = list(row)
-        packetloss_count = int(row[2]) - int(row[3])
+	hour_num = row[0]
+	row.append(hour_num)
+	row[0] = str(int(row[0]))+':00-'+str(int(row[0])+1)+':00' # it makes hour: '01' >> '1:00-2:00'
+        packetloss_count = int(row[3])
         if packetloss_count ==0:
             row.append('')
         elif 0 < packetloss_count < 6:
@@ -51,6 +60,26 @@ def get_statistic_ip(ip, db):
             row.append('warning_packetloss_level2')
         statistic_ip.append(row)
     return statistic_ip
+
+def get_statistic_ip_hour(ip, hour, db):
+    '''get a monitoring statistic for ip for specified hour [[hour, minute, sent, received, loss, warning_level], ... ]'''
+    conn = sqlite3.connect(db)
+    get_results_ip = conn.execute('select hour, minutes, sent, received, loss from ping_results where ip=? and hour=?', (ip, hour))
+    get_results_ip = get_results_ip.fetchall()
+    conn.close()
+    statistic_ip_hour = []
+    for row in get_results_ip:
+	row = list(row)
+	packetloss_count = int(row[2]) - int(row[3])
+        if packetloss_count ==0:
+            row.append('')
+        elif 0 < packetloss_count < 6:
+            row.append('warning_packetloss_level1')
+        elif packetloss_count >= 6:
+            row.append('warning_packetloss_level2')
+        statistic_ip_hour.append(row)
+    return statistic_ip_hour
+
 
 def get_existing_bases():
     '''get a list of existing bases with results ['dd.mm.yyyy', ]'''
@@ -87,7 +116,7 @@ def get_group_and_comment_list(group_id=''):
     if group_id:
         group_list = conn.execute('select id, group_name, group_comment from group_list where id=?', (group_id, ))
     else:
-        group_list = conn.execute('select id, group_name, group_comment from group_list')
+        group_list = conn.execute('select id, group_name, group_comment from group_list order by id DESC')
     group_list = group_list.fetchall()
     return group_list
 
@@ -158,10 +187,10 @@ def test():
     return request.path
 
 @route('/static/<filename>')
-def server_static(filename):
-    return static_file(filename, root='./static/css/')
+def static_css(filename):
+    return static_file(filename, root='static/css/')
 @route('/img/<filename>')
-def img(filename):
+def static_img(filename):
     return static_file(filename, root='./static/img/')
 
 @route('/')
@@ -237,13 +266,12 @@ def add_ip():
             add_group(new_group_name, new_group_comment)
             add_ip_for_monitoring(ip_addr, hostname, new_group_name)
     else:
-        error_message = 'You should write a name for new group'
+        error_message = 'The name of new group is needed'
     return start_page(error_message)
 
 @route('/<group_id:re:\d*>')
 @route('/<group_id:re:\d*>/<ip_address:re:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}>')
-@route('/<group_id:re:\d*>/<ip_address:re:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}>/<date:re:(3[01]|2[0-9]|[01][0-9])\.(1[012]|0[1-9])\.([12][0-9][0-9][0-9])>')
-def show_statistic(group_id, ip_address='', date=''):
+def show_statistic(group_id, ip_address=''):
     if request.query.action:                                                                                                                  
         if request.query.action == "delete_group" and request.query.group_id:                                                               
                 group_id = int(request.query.group_id)                                                                                        
@@ -281,7 +309,8 @@ def show_statistic(group_id, ip_address='', date=''):
     if ip_address:
         if not check_format_ip(ip_address):
             return redirect('/'+group_id)
-        
+    
+    date = request.query.get('show-date')
     if date and check_format_date(date):
         monitoring_date = date
     else:
@@ -293,12 +322,20 @@ def show_statistic(group_id, ip_address='', date=''):
     else:
         ip_statistic = []
 
+    hour = request.query.get('hour')
+    if hour:
+	ip_statistic_hour = get_statistic_ip_hour(ip_address, hour, db)
+    else:
+	ip_statistic_hour = []
+
     return template('ip_statistic.html',
                     group_info=group_info, # group_info = [(group_id, group_name, group_comment), [(ip, hostname), ...]]
                     ip_statistic=ip_statistic, 
+		    ip_statistic_hour = ip_statistic_hour,
                     monitoring_date=monitoring_date, 
                     ip_address=ip_address,
-                    date_list=date_list)
+                    date_list=date_list,
+		    hour=hour)
 
 @route('/<group_id:re:\d*>/edit')
 def edit_group(group_id):
@@ -322,7 +359,7 @@ def edit_group_save(group_id):
 def error404(error):
     return '<h1>Page not found. Error 404.</h1> <span>path: ' + request.path + '</span>' 
 
-run(host='162.243.89.35', port=8888, debug=True)
+run( port=8888, debug=True, reload=True)
 #run(server='cgi')
 
 ###################
