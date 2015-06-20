@@ -10,13 +10,6 @@
         <div class='container'>
             <div class='header'>
                 <span id='move-back'><a href='/'><b><< To Start Page</b></a></span>
-		<span><br>todo:<br>
-			- разместить две таблицы параллельно, запилить их в отдельные div <br>
-			- выравнивание в ячейках таблицы - по левому краю.<br>
-			- в результат по часам передается "loss NUM %" а в результ. поминутно - "NUM" -- wtf? сделать только "NUM"<br>
-			- цвет строки определять не с бекэнда а в шаблоне
-			- "Shown hour: 11"  >> "Shown hour: 11:00-12:00"
-		    </span>
             </div>
             <div class='content'>
                 
@@ -73,61 +66,62 @@
                 <br><br>
                 <span><b> Monitoring results</b></span><br><br>
                 <span><b> IP:</b> {{ip_address}}</span><br>
-		<form class='form-show-date' name='form-show-date'>
-			<span><b>Select date: </b></span>
-			<select name='show-date'>	    
-			    <option>------------------</option>
-			  % for date in date_list:
-			    <option>{{date}}</option>
-			  % end
-			</select>
-			<input type='submit' value='Show'>
-		    </form>
-                <ul>
-                </ul>
-                <span><b> Shown date:</b> {{monitoring_date}}</span>
-                <br><br>
-                <table class='table-results'>
-                    <tr>
-                        <th class='column-time'>Time</th>
-                        <th>Sent</th>
-                        <th>Received</th>
-                        <th>Loss %</th>
-                    </tr>
-                  % for row in ip_statistic:
-                    <tr class='{{row[4]}}'>
-                        <td><a href='/{{group_info[0][0]}}/{{ip_address}}?show-date={{monitoring_date}}&hour={{row[4]}}'>{{row[0]}}</a></td>
-                        <td>{{row[1]}}</td>
-                        <td>{{row[2]}}</td>
-                        <td>loss: {{row[3]}}%</td>
-                    </tr>
-                  % end
-                </table>
-		<br>
-		<span><b> Shown hour:</b> {{hour}}</span>
-		<br>
-                <table class='table-results'>
-                    <tr>
-                        <th class='column-time'>Time</th>
-                        <th>Sent</th>
-                        <th>Received</th>
-                        <th>Loss %</th>
-                    </tr>
-                  % for row in ip_statistic_hour:
-                    <tr class='{{row[5]}}'>
-                        <td>{{row[0]}}:{{row[1]}}</td>
-                        <td>{{row[2]}}</td>
-                        <td>{{row[3]}}</td>
-                        <td>loss: {{row[4]}}</td>
-                    </tr>
-                  % end
-                </table>
-
-
-              % end  
+				<form class='form-show-date' name='form-show-date'>
+					<span><b>Select date: </b></span>
+					<select name='show-date'>	    
+			   			<option>----------------------</option>
+			  			% for date in date_list:
+			    		<option>{{date}}</option>
+			  			% end
+					</select>
+					<input type='submit' value='Show'>
+		    	</form>
+				<div class='div-table-results-day'>
+                	<span><b> Shown date:</b> {{monitoring_date}}</span>
+					<table class='table-results'>
+						<tr>
+							<th class='column-time'>Time</th>
+							<th>Sent</th>
+							<th>Received</th>
+							<th>Loss %</th>
+						</tr>
+					% for row in ip_statistic:
+						<tr class='{{row[5]}}'>
+							<td><a href='/{{group_info[0][0]}}/{{ip_address}}?show-date={{monitoring_date}}&hour={{row[4]}}'>{{row[0]}}</a></td>
+							<td>{{row[1]}}</td>
+							<td>{{row[2]}}</td>
+							<td>loss: {{row[3]}}%</td>
+						</tr>
+				    % end
+				    </table>
+				</div>
+				% if hour:
+				<div class='div-table-results-hour'>
+					<%
+						hour = hour+":00-" + str(int(hour)+1)+":00"
+					%>
+					<span><b> Shown hour:</b> {{hour}}</span>
+					<br>
+					<table class='table-results'>
+						<tr>
+							<th class='column-time'>Time</th>
+							<th>Sent</th>
+							<th>Received</th>
+							<th>Loss %</th>
+						</tr>
+						% for row in ip_statistic_hour:
+						<tr class='{{row[5]}}'>
+							<td>{{row[0]}}:{{row[1]}}</td>
+							<td>{{row[2]}}</td>
+							<td>{{row[3]}}</td>
+							<td>loss: {{row[4]}}%</td>
+						</tr>
+						% end
+					</table>
+				 </div>
+				 % end
+         % end  
               <!-- end Monitoring results -->
-            </div>
-
             <div class='clearer'>
             </div>
         </div>

@@ -1,4 +1,3 @@
-
 html,body{
     margin:0;
     padding:0;
@@ -21,12 +20,14 @@ div.content{
 /*    float:right;*/
     float:center;
 }
+/*
 div.footer{
     background:#D3D3D3;
     height:100px;
     float:bottom;
     text-align:center;
 }
+*/
 div.clearer{
     clear:both;
 }
@@ -121,13 +122,14 @@ td{
 ----------- results table
 */
 .table-results{
-    text-align:center;
+    text-align:left;
+	margin-top:10px;
 }
 .column-time{
     width:100px;
 }
 th{
-    padding:2px;
+    padding-right:10px;
 }
 .warning_packetloss_level1{
     background: #FFACC3;
@@ -147,3 +149,15 @@ th{
     padding: 10px 0px 10px 5px;
 }
 
+div.div-table-results-day{
+    float: left;
+	padding-top:10px;
+/*    border:1px solid red;*/
+    width:398px;
+}
+div.div-table-results-hour{
+    float:right;
+	padding-top:10px;
+/*    border:1px solid red;*/
+    width:398px;
+}

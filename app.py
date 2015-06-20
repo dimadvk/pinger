@@ -38,11 +38,11 @@ path_to_db = os.path.join(abs_path_to_script, '../database/')
 
 #########
 
-def get_statistic_ip(ip, db):
-    '''get a day monitoring statistic for ip [[hour, sent, received, loss, hour_num, warning_level], ... ]'''
+def get_statistic_ip_day(ip, db):
+    '''get a day monitoring statistic for ip [[hour, sent, received, loss_percent, hour_num, warning_level], ... ]'''
     conn = sqlite3.connect(db)
 #    get_results_ip = conn.execute('select hour, minutes, sent, received, loss from ping_results where ip=?', (ip, ))
-    get_results_ip = conn.execute('select hour, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sent) as loss from ping_results where ip=? group by hour', (ip, ))
+    get_results_ip = conn.execute('select hour, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sent) as loss_percent from ping_results where ip=? group by hour', (ip, ))
     get_results_ip = get_results_ip.fetchall()
     conn.close()
     statistic_ip = []
@@ -50,13 +50,13 @@ def get_statistic_ip(ip, db):
         row = list(row)
 	hour_num = row[0]
 	row.append(hour_num)
-	row[0] = str(int(row[0]))+':00-'+str(int(row[0])+1)+':00' # it makes hour: '01' >> '1:00-2:00'
-        packetloss_count = int(row[3])
-        if packetloss_count ==0:
+	row[0] = row[0]+':00-'+str(int(row[0])+1)+':00' # it makes hour: '01' >> '1:00-2:00'
+	packetloss = int(row[3])
+	if packetloss ==0:
             row.append('')
-        elif 0 < packetloss_count < 6:
+        elif 0 < packetloss < 6:
             row.append('warning_packetloss_level1')
-        elif packetloss_count >= 6:
+        elif packetloss >= 6:
             row.append('warning_packetloss_level2')
         statistic_ip.append(row)
     return statistic_ip
@@ -64,18 +64,18 @@ def get_statistic_ip(ip, db):
 def get_statistic_ip_hour(ip, hour, db):
     '''get a monitoring statistic for ip for specified hour [[hour, minute, sent, received, loss, warning_level], ... ]'''
     conn = sqlite3.connect(db)
-    get_results_ip = conn.execute('select hour, minutes, sent, received, loss from ping_results where ip=? and hour=?', (ip, hour))
+    get_results_ip = conn.execute('select hour, minutes, sent, received, loss_percent from ping_results where ip=? and hour=?', (ip, hour))
     get_results_ip = get_results_ip.fetchall()
     conn.close()
     statistic_ip_hour = []
     for row in get_results_ip:
 	row = list(row)
-	packetloss_count = int(row[2]) - int(row[3])
-        if packetloss_count ==0:
+	packetloss = int(row[4])
+        if packetloss ==0:
             row.append('')
-        elif 0 < packetloss_count < 6:
+        elif 0 < packetloss < 6:
             row.append('warning_packetloss_level1')
-        elif packetloss_count >= 6:
+        elif packetloss >= 6:
             row.append('warning_packetloss_level2')
         statistic_ip_hour.append(row)
     return statistic_ip_hour
@@ -318,7 +318,7 @@ def show_statistic(group_id, ip_address=''):
     date_list = get_date_list_when_ip_monitored(ip_address)
     if monitoring_date in date_list:
         db = path_to_db + monitoring_date + '-results.sqlite3'
-        ip_statistic = get_statistic_ip(ip_address, db)
+        ip_statistic = get_statistic_ip_day(ip_address, db)
     else:
         ip_statistic = []
 
@@ -359,7 +359,7 @@ def edit_group_save(group_id):
 def error404(error):
     return '<h1>Page not found. Error 404.</h1> <span>path: ' + request.path + '</span>' 
 
-run( port=8888, debug=True, reload=True)
+run(host='195.234.68.26', port=8888, debug=True, reload=True)
 #run(server='cgi')
 
 ###################
