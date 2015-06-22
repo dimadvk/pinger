@@ -1,16 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Pinger - Monitoring List</title>
-        <link rel="stylesheet" type="text/css" href="/static/main.css">
-    </head>
-    <body link='#27292A' vlink='#27292A'>
-        <div class='container'>
+% rebase('base.html')
             <div class='header'>
-            <span><a href='/'><b>Pinger :)</b></a><span>
-        <br>
+                <span><a href='/'><b>Pinger :)</b></a></span>
+                <br>
             </div>
             % if error_message:
             <div class='error_message'>
@@ -71,7 +62,7 @@
                                 <img src='/img/edit.png' width=20 height=20></a>
                         </td>
                         <td class='td-delete-img'>
-                            <a href='/?action=delete_group&group_id={{row[0][0]}}'>
+                            <a href='/?action=delete_group&amp;group_id={{row[0][0]}}'>
                                 <img src='/img/delete.png' width=20 height=20></a>
                         </td>
                     </tr>
@@ -96,7 +87,7 @@
                         <td>
                         </td>
                         <td class='td-delete-img'>
-                            <a href='/?action=delete_ip&group_id={{row[0][0]}}&ip_addr={{element[0]}}'>
+                            <a href='/?action=delete_ip&amp;group_id={{row[0][0]}}&amp;ip_addr={{element[0]}}'>
                                 <img src='/img/delete.png' width=20 height=20></a>
                         </td>
 
@@ -105,8 +96,3 @@
                     % end
                 </table>
             </div>
-            <div class='clearer'>
-            </div>
-        </div>
-    </body>
-</html>

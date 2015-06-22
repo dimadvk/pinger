@@ -330,7 +330,7 @@ def show_statistic(group_id, ip_address=''):
                     ip_address=ip_address,
                     date_list=date_list,
                     hour=hour,
-                    page_title='Statistics &mdash; Pinger')
+                    page_title='Statistics - Pinger')
 
 @route('/<group_id:re:\d*>/edit')
 def edit_group(group_id):
@@ -341,7 +341,7 @@ def edit_group(group_id):
         return redirect('/')
     return template('edit_group.html', 
                     group_and_comment=group_and_comment,
-                    page_title='Edit Comment &mdash; Pinger')
+                    page_title='Edit Comment - Pinger')
 
 @route('/<group_id:re:\d*>/edit', method='POST')
 def edit_group_save(group_id):

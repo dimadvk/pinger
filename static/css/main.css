@@ -17,17 +17,15 @@ div.container{
 div.content{
     padding:2em 0 4em 0;
     width:100%;
-/*    float:right;*/
     float:center;
 }
-/*
 div.footer{
     background:#D3D3D3;
-    height:100px;
+    height:80px;
+    width:800px;
     float:bottom;
-    text-align:center;
+    margin:auto;
 }
-*/
 div.clearer{
     clear:both;
 }
@@ -118,8 +116,23 @@ td{
 }
 
 /*
------------ results table
+----------- monitoring results
 */
+div.monitoring-results{
+    padding:20px 0px 0px 5px;
+}
+div.result-tables{
+    margin:auto;
+    padding:20px;
+}
+div.div-table-results-day{
+    float: left;
+    width:370px;
+}
+div.div-table-results-hour{
+    float:right;
+    width:370px;
+}
 .table-results{
     text-align:left;
 	margin-top:10px;
@@ -146,25 +159,4 @@ th{
     margin-top:1px;
     background:#FF6A66;
     padding: 10px 0px 10px 5px;
-}
-div.monitoring-results{
-    padding:20px 0px 0px 5px;
-}
-div.result-tables{
-    margin:auto;
-    padding:20px;
-/*    border:1px solid red;*/
-}
-div.div-table-results-day{
-    float: left;
-/*    padding-top:10px;
-    padding-left:20px;
-    border:1px solid red;*/
-    width:370px;
-}
-div.div-table-results-hour{
-    float:right;
-/*    padding-top:10px;
-    border:1px solid red;*/
-    width:370px;
 }
