@@ -10,58 +10,55 @@
         <div class='container'>
             <div class='header'>
             <span><a href='/'><b>Pinger :)</b></a><span>
-	    <br>
+        <br>
             </div>
-          % if error_message:
+            % if error_message:
             <div class='error_message'>
                 <span><b>Error:</b> {{error_message}}</span>
             </div>
-          % end
-
+            % end
             <div class='content'>
                 <span><b>-- Add IP</b></span>
                 <form class='form-add-ip' name='add_ip' method='post'>
-                    <p>
-                        <input name='ip' id='ip' type='text' placeholder="111.111.111.111"><b> IP</b>
-                        <br>
-                        <input name='hostname' id='hostname' type='text' maxlength="38" placeholder="hostname"><b> Hostname</b>
-                        <br>
-                        <input onclick="document.getElementById('group_name').disabled = false; 
-                                        document.getElementById('new_group_name').disabled = true;
-                                        document.getElementById('group_comment').disabled = true;" 
-                               type="radio" name="group" value="customurl" checked>
-                        <select name="group_name" id="group_name">
-                          % for row in group_list:
-                            <option>{{row[1]}}</option>
-                          % end 
-                        </select><b> Select group</b>
-                        <br>
-                        <input onclick="document.getElementById('group_name').disabled = true;
-                                        document.getElementById('new_group_name').disabled = false;
-                                        document.getElementById('group_comment').disabled = false;" 
-                               type="radio" name="group">
-                        <input type="text" 
-                               name="new_group_name" 
-                               id="new_group_name" 
-                               placeholder="new group name"
-                               maxlength="40"
-                               disabled="disabled"><b> Create new group</b>
-                        <br>
-                        <textarea name='group_comment' 
-                                  id="group_comment" 
-                                  maxlength="500"
-                                  placeholder="comment for new group" 
-                                  disabled="disabled"></textarea><b> Comment</b>
-                        <br>
-                        <input type='submit' value='Add'>
-                    </p>
+                    <input name='ip' id='ip' type='text' placeholder="111.111.111.111"><b> IP</b>
+                    <br>
+                    <input name='hostname' id='hostname' type='text' maxlength="38" placeholder="hostname"><b> Hostname</b>
+                    <br>
+                    <input onclick="document.getElementById('group_name').disabled = false; 
+                                    document.getElementById('new_group_name').disabled = true;
+                                    document.getElementById('group_comment').disabled = true;" 
+                           type="radio" name="group" value="customurl" checked>
+                    <select name="group_name" id="group_name">
+                      % for row in group_list:
+                      <option>{{row[1]}}</option>
+                      % end 
+                    </select><b> Select group</b>
+                    <br>
+                    <input onclick="document.getElementById('group_name').disabled = true;
+                                    document.getElementById('new_group_name').disabled = false;
+                                    document.getElementById('group_comment').disabled = false;" 
+                           type="radio" name="group">
+                    <input type="text" 
+                           name="new_group_name" 
+                           id="new_group_name" 
+                           placeholder="new group name"
+                           maxlength="40"
+                           disabled="disabled"><b> Create new group</b>
+                    <br>
+                    <textarea name='group_comment' 
+                              id="group_comment" 
+                              maxlength="500"
+                              placeholder="comment for new group" 
+                              disabled="disabled"></textarea><b> Comment</b>
+                    <br>
+                    <input type='submit' value='Add'>
                 </form>
                 <br>
                 <span><b>-- Monitoring list</b></span>
                 <br>
                 <br>
                 <table>
-                  % for row in monitoring_list:
+                    % for row in monitoring_list:
                     <tr>
                         <td class='mon-list-separator' colspan='4'>-</td>
                     </tr>
@@ -70,10 +67,12 @@
                             <a href='/{{row[0][0]}}'>{{row[0][1]}}</a>
                         </td>
                         <td class='td-edit-img'>
-                            <a href='/{{row[0][0]}}/edit'><img src='/img/edit.png' width=20 height=20></a>
+                            <a href='/{{row[0][0]}}/edit'>
+                                <img src='/img/edit.png' width=20 height=20></a>
                         </td>
                         <td class='td-delete-img'>
-                            <a href='/?action=delete_group&group_id={{row[0][0]}}'><img src='/img/delete.png' width=20 height=20></a>
+                            <a href='/?action=delete_group&group_id={{row[0][0]}}'>
+                                <img src='/img/delete.png' width=20 height=20></a>
                         </td>
                     </tr>
                     <tr>
@@ -87,32 +86,27 @@
                         x = i%2
                         i += 1
                     %>
-                        <tr class='mon-list-ip-row{{x}}'>
-                            <td class='mon-list-ipaddr'>
-                                <a href='/{{row[0][0]}}/{{element[0]}}' >{{element[0]}}</a>
-                            </td>
-                            <td class='mon-list-hostname'>
-                                {{element[1]}}
-                            </td>
-                            <td>
-                            </td>
-                            <td class='td-delete-img'>
-                                <a href='/?action=delete_ip&group_id={{row[0][0]}}&ip_addr={{element[0]}}'><img src='/img/delete.png' 
-                                                                      width=20 
-                                                                      height=20></a>
-                            </td>
+                    <tr class='mon-list-ip-row{{x}}'>
+                        <td class='mon-list-ipaddr'>
+                            <a href='/{{row[0][0]}}/{{element[0]}}' >{{element[0]}}</a>
+                        </td>
+                        <td class='mon-list-hostname'>
+                            {{element[1]}}
+                        </td>
+                        <td>
+                        </td>
+                        <td class='td-delete-img'>
+                            <a href='/?action=delete_ip&group_id={{row[0][0]}}&ip_addr={{element[0]}}'>
+                                <img src='/img/delete.png' width=20 height=20></a>
+                        </td>
 
-                        </tr>
-                     % end
                     </tr>
-                  % end
+                    % end
+                    % end
                 </table>
             </div>
-
-            
             <div class='clearer'>
             </div>
         </div>
     </body>
 </html>
-

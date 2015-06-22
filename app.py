@@ -41,18 +41,17 @@ path_to_db = os.path.join(abs_path_to_script, '../database/')
 def get_statistic_ip_day(ip, db):
     '''get a day monitoring statistic for ip [[hour, sent, received, loss_percent, hour_num, warning_level], ... ]'''
     conn = sqlite3.connect(db)
-#    get_results_ip = conn.execute('select hour, minutes, sent, received, loss from ping_results where ip=?', (ip, ))
     get_results_ip = conn.execute('select hour, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sent) as loss_percent from ping_results where ip=? group by hour', (ip, ))
     get_results_ip = get_results_ip.fetchall()
     conn.close()
     statistic_ip = []
     for row in get_results_ip:
         row = list(row)
-	hour_num = row[0]
-	row.append(hour_num)
-	row[0] = row[0]+':00-'+str(int(row[0])+1)+':00' # it makes hour: '01' >> '1:00-2:00'
-	packetloss = int(row[3])
-	if packetloss ==0:
+        hour_num = row[0]
+        row.append(hour_num)
+        row[0] = row[0]+':00-'+str(int(row[0])+1)+':00' # it makes hour: '01' >> '1:00-2:00'
+        packetloss = int(row[3])
+        if packetloss ==0:
             row.append('')
         elif 0 < packetloss < 6:
             row.append('warning_packetloss_level1')
@@ -69,8 +68,8 @@ def get_statistic_ip_hour(ip, hour, db):
     conn.close()
     statistic_ip_hour = []
     for row in get_results_ip:
-	row = list(row)
-	packetloss = int(row[4])
+        row = list(row)
+        packetloss = int(row[4])
         if packetloss ==0:
             row.append('')
         elif 0 < packetloss < 6:
@@ -126,7 +125,6 @@ def update_group_comment(group_id, group_comment):
     conn.commit()
     conn.close()
 
-
 def get_group_ip_list(group_name):
     """it returns list [(ip, hostname), (ip2, hostname2) ... ]"""
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
@@ -181,11 +179,6 @@ def check_format_date(date):
 
 #########
 
-@route('/test')
-def test():
-   
-    return request.path
-
 @route('/static/<filename>')
 def static_css(filename):
     return static_file(filename, root='static/css/')
@@ -229,7 +222,8 @@ def start_page(error_message=''):
     return template('start.html', 
                     group_list = group_list,
                     monitoring_list = monitoring_list,
-                    error_message=error_message)
+                    error_message=error_message,
+                    page_title = 'Pinger')
 
 @route('/', method='POST')
 def add_ip():
@@ -289,9 +283,10 @@ def show_statistic(group_id, ip_address=''):
                     return redirect(request.path)                                                                                             
                 group_name = get_group_and_comment_list(group_id)[0][1]                                                                       
                 ip_address = request.query.ip_addr                                                                                            
-                group_ip_hostname_list = get_group_ip_list(group_name)                                                                        
-                group_ip_list = [x[0] for x in group_ip_hostname_list]                                                                        
-                if ip_address not in group_ip_list:                                                                                                               return redirect(request.path)                                                                                             
+                group_ip_hostname_list = get_group_ip_list(group_name)
+                group_ip_list = [x[0] for x in group_ip_hostname_list]
+                if ip_address not in group_ip_list:
+                    return redirect(request.path)
                 delete_ip_from_monitoring(group_id, ip_address)                                                                               
                 return redirect(request.path)   
         else:
@@ -305,7 +300,6 @@ def show_statistic(group_id, ip_address=''):
     group_name = group_id_name_comment[0][1]
     group_ip_list = get_group_ip_list(group_name)
     group_info.append(group_ip_list)
-
     if ip_address:
         if not check_format_ip(ip_address):
             return redirect('/'+group_id)
@@ -324,18 +318,19 @@ def show_statistic(group_id, ip_address=''):
 
     hour = request.query.get('hour')
     if hour:
-	ip_statistic_hour = get_statistic_ip_hour(ip_address, hour, db)
+        ip_statistic_hour = get_statistic_ip_hour(ip_address, hour, db)
     else:
-	ip_statistic_hour = []
+        ip_statistic_hour = []
 
     return template('ip_statistic.html',
                     group_info=group_info, # group_info = [(group_id, group_name, group_comment), [(ip, hostname), ...]]
                     ip_statistic=ip_statistic, 
-		    ip_statistic_hour = ip_statistic_hour,
+                    ip_statistic_hour = ip_statistic_hour,
                     monitoring_date=monitoring_date, 
                     ip_address=ip_address,
                     date_list=date_list,
-		    hour=hour)
+                    hour=hour,
+                    page_title='Statistics &mdash; Pinger')
 
 @route('/<group_id:re:\d*>/edit')
 def edit_group(group_id):
@@ -345,7 +340,8 @@ def edit_group(group_id):
     if not group_and_comment:
         return redirect('/')
     return template('edit_group.html', 
-                    group_and_comment=group_and_comment)
+                    group_and_comment=group_and_comment,
+                    page_title='Edit Comment &mdash; Pinger')
 
 @route('/<group_id:re:\d*>/edit', method='POST')
 def edit_group_save(group_id):
