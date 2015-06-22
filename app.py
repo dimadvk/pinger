@@ -359,7 +359,7 @@ def edit_group_save(group_id):
 def error404(error):
     return '<h1>Page not found. Error 404.</h1> <span>path: ' + request.path + '</span>' 
 
-run(host='195.234.68.26', port=8888, debug=True, reload=True)
+run(port=8888, debug=True, reload=True)
 #run(server='cgi')
 
 ###################
