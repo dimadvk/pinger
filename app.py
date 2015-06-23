@@ -40,10 +40,10 @@ path_to_db = os.path.join(abs_path_to_script, '../database/')
 def get_statistic_ip_day(ip, db):
     '''get a day monitoring statistic for ip [[hour, sent, received, loss_percent, hour_num, warning_level], ... ]'''
     conn = sqlite3.connect(db)
-    get_results_ip = conn.execute('select hour, 
-                                          sum(sent),
-                                          sum(received), 
-                                          (sum(sent)-sum(received))*100/sum(sent) as loss_percent 
+    get_results_ip = conn.execute('select hour, \
+                                          sum(sent),\
+                                          sum(received),\
+                                          (sum(sent)-sum(received))*100/sum(sent) as loss_percent \
                                             from ping_results where ip=? group by hour', (ip, ))
     get_results_ip = get_results_ip.fetchall()
     conn.close()
@@ -66,7 +66,12 @@ def get_statistic_ip_day(ip, db):
 def get_statistic_ip_hour(ip, hour, db):
     '''get a monitoring statistic for ip for specified hour [[hour, minute, sent, received, loss, warning_level], ... ]'''
     conn = sqlite3.connect(db)
-    get_results_ip = conn.execute('select hour, minutes, sent, received, (sent - received)*100/sent as loss_percent from ping_results where ip=? and hour=?', (ip, hour))
+    get_results_ip = conn.execute('select hour,\
+                                          minutes,\
+                                          sent,\
+                                          received,\
+                                          (sent - received)*100/sent as loss_percent \
+                                            from ping_results where ip=? and hour=?', (ip, hour))
     get_results_ip = get_results_ip.fetchall()
     conn.close()
     statistic_ip_hour = []
