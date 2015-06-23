@@ -13,6 +13,7 @@ div.container{
     width:800px;
     background:#F1F1F1;
     min-height:100%;
+    margin-bottom:20px;
 }
 div.content{
     padding:2em 0 4em 0;
