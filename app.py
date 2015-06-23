@@ -63,7 +63,7 @@ def get_statistic_ip_day(ip, db):
 def get_statistic_ip_hour(ip, hour, db):
     '''get a monitoring statistic for ip for specified hour [[hour, minute, sent, received, loss, warning_level], ... ]'''
     conn = sqlite3.connect(db)
-    get_results_ip = conn.execute('select hour, minutes, sent, received, loss_percent from ping_results where ip=? and hour=?', (ip, hour))
+    get_results_ip = conn.execute('select hour, minutes, sent, received, (sent - received)*100/sent as loss_percent from ping_results where ip=? and hour=?', (ip, hour))
     get_results_ip = get_results_ip.fetchall()
     conn.close()
     statistic_ip_hour = []
