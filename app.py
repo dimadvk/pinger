@@ -14,7 +14,6 @@ select hour, ip, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sen
 """
 - add checkin is database 'pinger_db.sqlite3' exists when server starts.
     If no 'pinger_db.sqlite3' exists initialize new one.
-    How will it work with Apache?
 - add checking is anyone database with results exists. 
     If not return page with message 'Can't find any results. Add pinger.py to crontab. Wait 1 minute for first results' or something like this.
 - move all functions (except functions with @route) from here to one specialized module-file
@@ -41,7 +40,11 @@ path_to_db = os.path.join(abs_path_to_script, '../database/')
 def get_statistic_ip_day(ip, db):
     '''get a day monitoring statistic for ip [[hour, sent, received, loss_percent, hour_num, warning_level], ... ]'''
     conn = sqlite3.connect(db)
-    get_results_ip = conn.execute('select hour, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sent) as loss_percent from ping_results where ip=? group by hour', (ip, ))
+    get_results_ip = conn.execute('select hour, 
+                                          sum(sent),
+                                          sum(received), 
+                                          (sum(sent)-sum(received))*100/sum(sent) as loss_percent 
+                                            from ping_results where ip=? group by hour', (ip, ))
     get_results_ip = get_results_ip.fetchall()
     conn.close()
     statistic_ip = []
@@ -191,18 +194,20 @@ def start_page(error_message=''):
     if request.query.action:
         if request.query.action == "delete_group" and request.query.group_id:
                 group_id = int(request.query.group_id)
-                group_list = get_group_and_comment_list()
-                group_id_list = [x[0] for x in group_list ]
-                if group_id not in group_id_list:
+                # check, is group with id=="group_id" exists
+                check_group_exists = get_group_and_comment_list(group_id)
+                if not check_group_exists:
                     return redirect(request.path)
+                ##
                 delete_group_from_monitoring(group_id)
                 return redirect(request.path)
         elif request.query.action == "delete_ip" and request.query.group_id and request.query.ip_addr:
                 group_id = int(request.query.group_id)
-                group_list = get_group_and_comment_list()
-                group_id_list = [x[0] for x in group_list ]
-                if group_id not in group_id_list:
+                # check, is group with id=="group_id" exists
+                check_group_exists = get_group_and_comment_list(group_id)
+                if not check_group_exists:
                     return redirect(request.path)
+                ##
                 group_name = get_group_and_comment_list(group_id)[0][1]
                 ip_address = request.query.ip_addr
                 group_ip_hostname_list = get_group_ip_list(group_name)
