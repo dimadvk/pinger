@@ -32,7 +32,7 @@
                     %>
                     <tr class='mon-list-ip-row{{x}}'>
                         <td class='mon-list-ipaddr'>
-                            <a href='/{{group_info[0][0]}}/{{element[0]}}' >{{element[0]}}</a>
+                            <a href='/{{group_info[0][0]}}?ip={{element[0]}}' >{{element[0]}}</a>
                         </td>
                         <td class='mon-list-hostname'>
                             {{element[1]}}
@@ -53,11 +53,16 @@
                     <span><b> Monitoring results</b></span><br><br>
                     <span><b> IP:</b> {{ip_address}}</span><br>
                     <form class='form-show-date' name='form-show-date'>
+                        <input type="hidden" name="ip" value="{{ip_address}}">
                         <span><b>Select date: </b></span>
                         <select name='show-date'>           
                             <option>----------------------</option>
                             % for date in date_list:
-                            <option>{{date}}</option>
+                            <option
+                                % if monitoring_date == date:
+                                    selected='selected'
+                                % end
+                                    >{{date}}</option>
                             % end
                         </select>
                         <input type='submit' value='Show'>
@@ -76,7 +81,7 @@
                                 % for row in ip_statistic:
                                 <tr class='{{row[5]}}'>
                                     <td>
-                                        <a href='/{{group_info[0][0]}}/{{ip_address}}?show-date={{monitoring_date}}&amp;hour={{row[4]}}'>{{row[0]}}</a>
+                                        <a href='/{{group_info[0][0]}}?ip={{ip_address}}&show-date={{monitoring_date}}&amp;hour={{row[4]}}'>{{row[0]}}</a>
                                     </td>
                                     <td>{{row[1]}}</td>
                                     <td>{{row[2]}}</td>

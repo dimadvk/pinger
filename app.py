@@ -124,7 +124,7 @@ def get_group_and_comment_list(g_id='', g_name=''):
     '''get group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]'''
     group_list = []
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    if group_id:
+    if g_id:
         group_list = conn.execute('select id, group_name, group_comment from group_list where id=?', (g_id, ))
     elif g_name:
         group_list = conn.execute('select id, group_name, group_comment from group_list where group_name=?', (g_name, ))
@@ -240,7 +240,9 @@ def add_ip():
     ip_addr = request.forms.get('ip')
     ip_addr = re.sub('[ ]', '', ip_addr) # just clear any ' ' from string
     hostname = request.forms.get('hostname').decode('utf-8') # .decode('utf-8') - it needs for sqlite3 accepting cyrillic symbols
-    selected_group_id = int(request.forms.get('select_group'))
+    selected_group_id = request.forms.get('select_group')
+    if selected_group_id:
+        selected_group_id = int(selected_group_id)
     new_group_name = request.forms.get('new_group_name')
     new_group_comment = request.forms.get('group_comment')
     if selected_group_id: # if user want to add ip with one of existing group
@@ -267,7 +269,7 @@ def add_ip():
                 new_group_comment = 'not commented'
             add_group(new_group_name, new_group_comment)
             # get group_id of new group as new_group_id
-            new_group_id = get_group_and_comment_list(g_name=new_group_name)[0]
+            new_group_id = get_group_and_comment_list(g_name=new_group_name)[0][0]
 
             add_ip_for_monitoring(ip_addr, hostname, new_group_id)
     else:
@@ -275,8 +277,9 @@ def add_ip():
     return start_page(error_message)
 
 @route('/<group_id:re:\d*>')
-@route('/<group_id:re:\d*>/<ip_address:re:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}>')
-def show_statistic(group_id, ip_address=''):
+#@route('/<group_id:re:\d*>/<ip_address:re:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}>')
+#def show_statistic(group_id, ip_address=''):
+def show_statistic(group_id):
     if request.query.action:                                                                                                                  
         if request.query.action == "delete_group" and request.query.group_id:                                                               
                 group_id = int(request.query.group_id)                                                                                        
@@ -287,7 +290,7 @@ def show_statistic(group_id, ip_address=''):
                 delete_group_from_monitoring(group_id)                                                                                        
                 return redirect('/')                                                                                                 
         elif request.query.action == "delete_ip" and request.query.group_id and request.query.ip_addr:                                        
-                 group_id = int(request.query.group_id)
+                group_id = int(request.query.group_id)
                 # check, is group with id=="group_id" exists
                 group_name_comment = get_group_and_comment_list(g_id=group_id)
                 if not group_name_comment:
@@ -309,9 +312,9 @@ def show_statistic(group_id, ip_address=''):
         return redirect(request.path)
     else:
         group_info.append(group_id_name_comment[0])
-    group_name = group_id_name_comment[0][1]
-    group_ip_list = get_group_ip_list(group_name)
+    group_ip_list = get_group_ip_list(group_id)
     group_info.append(group_ip_list)
+    ip_address = request.query.get('ip')
     if ip_address:
         if not check_format_ip(ip_address):
             return redirect('/'+group_id)
@@ -369,6 +372,7 @@ def error404(error):
 
 run(port=8888, debug=True, reload=True)
 #run(server='cgi')
+#run(host='192.168.7.49', port=8080, debug=True, reload=True)
 
 ###################
 ###################
