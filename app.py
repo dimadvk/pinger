@@ -3,7 +3,6 @@
 
 # shpargalka
 # create table group_list(id integer primary key AUTOINCREMENT, group_name text, group_comment text);
-# create table ip_list(id integer primary key AUTOINCREMENT, ip text, hostname text, group_name text);
 # create table ip_list (id INTEGER PRIMARY KEY autoincrement, ip text, hostname text, group_id integer);
 """
 select hour, ip, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sent) as loss from ping_results  group by ip, hour order by ip;
@@ -17,11 +16,8 @@ select hour, ip, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sen
 - add checking is anyone database with results exists. 
     If not return page with message 'Can't find any results. Add pinger.py to crontab. Wait 1 minute for first results' or something like this.
 - move all functions (except functions with @route) from here to one specialized module-file
-- add_ip() -- if IP not added due to a wrong format return page with error message
-- if user del some IP or group return start page with a message 'group/IP deleted. Undo?'. Link 'Undo' must set group/IP back to list.
-- same block of code for "delete_group" and "delete_ip" repeated two times.
-    make one function delete_ip_from_monitoring(xx,yy,zz,) that returns only message "error" or "successful"
-    make another one delete_group_from_monitoring(xx,yy,zz,)
+- убрать кучу файлов с результатами, все писать только в один файл pinger_db.sqlite3
+- remome monitoring results older than 2 month
 
 
 """
@@ -120,14 +116,14 @@ def get_date_list_when_ip_monitored(ip):
     date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%d.%m.%Y'))
     return date_list
  
-def get_group_and_comment_list(g_id='', g_name=''):
+def get_group_and_comment_list(group_id='', group_name=''):
     '''get group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]'''
     group_list = []
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    if g_id:
-        group_list = conn.execute('select id, group_name, group_comment from group_list where id=?', (g_id, ))
-    elif g_name:
-        group_list = conn.execute('select id, group_name, group_comment from group_list where group_name=?', (g_name, ))
+    if group_id:
+        group_list = conn.execute('select id, group_name, group_comment from group_list where id=?', (group_id, ))
+    elif group_name:
+        group_list = conn.execute('select id, group_name, group_comment from group_list where group_name=?', (group_name, ))
     else:
         group_list = conn.execute('select id, group_name, group_comment from group_list order by id DESC')
     group_list = group_list.fetchall()
@@ -147,9 +143,9 @@ def get_group_ip_list(group_id):
     conn.close()
     return group_ip_list
 
-def add_ip_for_monitoring(ip_addr, hostname, group_id):
+def add_ip_for_monitoring(ip_address, hostname, group_id):
     conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    conn.execute('insert into ip_list (ip, hostname, group_id) values (?, ?, ?)', (ip_addr, hostname, group_id))
+    conn.execute('insert into ip_list (ip, hostname, group_id) values (?, ?, ?)', (ip_address, hostname, group_id))
     conn.commit()
     conn.close()
 
@@ -160,18 +156,28 @@ def add_group(group_name, group_comment):
     conn.close()
 
 def delete_group_from_monitoring(group_id):
-    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    conn.execute('delete from group_list where id=?', (group_id, ))
-    conn.execute('delete from ip_list where group_id=?', (group_id, ))
-    conn.commit()
-    conn.close()
+    # check, is group with id=="group_id" exists
+    if get_group_and_comment_list(group_id=group_id):
+        conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+        conn.execute('delete from group_list where id=?', (group_id, ))
+        conn.execute('delete from ip_list where group_id=?', (group_id, ))
+        conn.commit()
+        conn.close()
+
+def delete_ip_from_monitoring(group_id, ip_address):
+    group_name_comment = get_group_and_comment_list(group_id=group_id)
+    if get_group_and_comment_list(group_id=group_id):
+        group_ip_hostname_list = get_group_ip_list(group_id)
+        group_ip_list = [x[0] for x in group_ip_hostname_list]
+        if ip_address in group_ip_list:
+            conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+            conn.execute('delete from ip_list where ip=? and group_id=?', (ip_address, group_id))
+            conn.commit()
+            conn.close()
+
+
     
-def delete_ip_from_monitoring(group_id, ip_addr):
-    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    conn.execute('delete from ip_list where ip=? and group_id=?', (ip_addr, group_id))
-    conn.commit()
-    conn.close()
-    
+###
 
 def check_format_ip(ip):
     if re.match('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip):
@@ -200,24 +206,11 @@ def start_page(error_message=''):
     if request.query.action:
         if request.query.action == "delete_group" and request.query.group_id:
                 group_id = int(request.query.group_id)
-                # check, is group with id=="group_id" exists
-                if not get_group_and_comment_list(g_id=group_id):
-                    return redirect(request.path)
-                ##
                 delete_group_from_monitoring(group_id)
                 return redirect(request.path)
         elif request.query.action == "delete_ip" and request.query.group_id and request.query.ip_addr:
                 group_id = int(request.query.group_id)
-                # check, is group with id=="group_id" exists
-                group_name_comment = get_group_and_comment_list(g_id=group_id)
-                if not group_name_comment:
-                    return redirect(request.path)
-                ##
                 ip_address = request.query.ip_addr
-                group_ip_hostname_list = get_group_ip_list(group_id)
-                group_ip_list = [x[0] for x in group_ip_hostname_list]
-                if ip_address not in group_ip_list:
-                    return redirect(request.path)
                 delete_ip_from_monitoring(group_id, ip_address)
                 return redirect(request.path)
         else:
@@ -269,7 +262,7 @@ def add_ip():
                 new_group_comment = 'not commented'
             add_group(new_group_name, new_group_comment)
             # get group_id of new group as new_group_id
-            new_group_id = get_group_and_comment_list(g_name=new_group_name)[0][0]
+            new_group_id = get_group_and_comment_list(group_name=new_group_name)[0][0]
 
             add_ip_for_monitoring(ip_addr, hostname, new_group_id)
     else:
@@ -282,32 +275,18 @@ def add_ip():
 def show_statistic(group_id):
     if request.query.action:                                                                                                                  
         if request.query.action == "delete_group" and request.query.group_id:                                                               
-                group_id = int(request.query.group_id)                                                                                        
-                group_list = get_group_and_comment_list()                                                                                     
-                group_id_list = [x[0] for x in group_list ]                                                                                   
-                if group_id not in group_id_list:                                                                                             
-                    return redirect(request.path)                                                                                             
-                delete_group_from_monitoring(group_id)                                                                                        
+                group_id = int(request.query.group_id)
+                delete_group_from_monitoring(group_id)
                 return redirect('/')                                                                                                 
         elif request.query.action == "delete_ip" and request.query.group_id and request.query.ip_addr:                                        
                 group_id = int(request.query.group_id)
-                # check, is group with id=="group_id" exists
-                group_name_comment = get_group_and_comment_list(g_id=group_id)
-                if not group_name_comment:
-                    return redirect(request.path)
-                ##
                 ip_address = request.query.ip_addr
-                group_ip_hostname_list = get_group_ip_list(group_id)
-                group_ip_list = [x[0] for x in group_ip_hostname_list]
-                if ip_address not in group_ip_list:
-                    return redirect(request.path)
                 delete_ip_from_monitoring(group_id, ip_address)
                 return redirect(request.path)
-           
         else:
                 return redirect(request.path)
     group_info = []
-    group_id_name_comment = get_group_and_comment_list(g_id=group_id)
+    group_id_name_comment = get_group_and_comment_list(group_id=group_id)
     if not group_id_name_comment:
         return redirect(request.path)
     else:
@@ -350,7 +329,7 @@ def show_statistic(group_id):
 @route('/<group_id:re:\d*>/edit')
 def edit_group(group_id):
     group_id = int(group_id)
-    group_and_comment = get_group_and_comment_list(g_id=group_id) # it returns [(group_id, group_name, group_comment)]
+    group_and_comment = get_group_and_comment_list(group_id=group_id) # it returns [(group_id, group_name, group_comment)]
     group_and_comment = group_and_comment[0]    # it makes (group_id, group_name, group_comment)
     if not group_and_comment:
         return redirect('/')
