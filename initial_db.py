@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 import sqlite3
+from settings import db_name
 
-database='pinger_db.sqlite3'
-
-conn = sqlite3.connect(database)
+conn = sqlite3.connect(db_name)
 conn.execute('CREATE TABLE group_list (id integer primary key AUTOINCREMENT, \
                                        group_name text, \
                                        group_comment text)')

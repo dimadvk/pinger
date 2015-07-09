@@ -29,6 +29,7 @@ import time, datetime
 import sqlite3
 import os
 import re
+from settings import db_name
 
 abs_path_to_script = os.path.dirname(__file__)
 path_to_db = os.path.join(abs_path_to_script, '../database/')

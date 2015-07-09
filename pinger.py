@@ -10,12 +10,12 @@
 import time # need for calculate current time
 import os # need for start ping processes
 import sqlite3
+from settings import ping, db_name
 
-db_ip_list='pinger_db.sqlite3'
-ping = '/bin/ping'
-
-abs_path_to_script = os.path.dirname(__file__)
-path_to_db = os.path.join(abs_path_to_script, '../database/')
+#DB_NAME='pinger_db.sqlite3'
+#PING = '/bin/ping' # path to ping utility
+#abs_path_to_script = os.path.dirname(__file__)
+#path_to_db = os.path.join(abs_path_to_script, '../database/')
 
 def initial_db(dbName):
     conn = sqlite3.connect(dbName)
@@ -51,10 +51,7 @@ def pinger(ip_list):
     for ip in ip_list:
             ping_results[ip] = ping_processes[ip].readlines()
     ## write results to database >>
-    db = path_to_db+cur_time[0]+'-results.sqlite3' # cur_time[0] == dd.mm.yyyy
-    if not os.path.exists(db): ## check database exists. If not - create one
-        initial_db(db)
-    conn = sqlite3.connect(db)
+    conn = sqlite3.connect(db_name)
     for ip in ping_results:
         statistic = []
         statistic.append(ping_results[ip][3].split(',')[0].split()[0]) # packets transmitted
@@ -66,7 +63,7 @@ def pinger(ip_list):
 
 ####
 
-ipaddr_list = get_ip_list(path_to_db + db_ip_list)
+ipaddr_list = get_ip_list(db_name)
 pinger(ipaddr_list)
 
 ####
