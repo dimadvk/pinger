@@ -32,20 +32,19 @@ import re
 from settings import db_name
 
 abs_path_to_script = os.path.dirname(__file__)
-path_to_db = os.path.join(abs_path_to_script, '../database/')
-#path_to_db = '/home/dvk/bottle/bottle-first/src/database/'
+path_to_db = os.path.join(abs_path_to_script, '.')
 
-
+db = db_name
 #########
 
-def get_statistic_ip_day(ip, db):
+def get_statistic_ip_day(ip, date):
     '''get a day monitoring statistic for ip [[hour, sent, received, loss_percent, hour_num, warning_level], ... ]'''
     conn = sqlite3.connect(db)
     get_results_ip = conn.execute('select hour, \
                                           sum(sent),\
                                           sum(received),\
                                           (sum(sent)-sum(received))*100/sum(sent) as loss_percent \
-                                            from ping_results where ip=? group by hour', (ip, ))
+                                            from ping_results where ip=? and date= ? group by hour', (ip, date))
     get_results_ip = get_results_ip.fetchall()
     conn.close()
     statistic_ip = []
@@ -64,7 +63,7 @@ def get_statistic_ip_day(ip, db):
         statistic_ip.append(row)
     return statistic_ip
 
-def get_statistic_ip_hour(ip, hour, db):
+def get_statistic_ip_hour(ip, date, hour):
     '''get a monitoring statistic for ip for specified hour [[hour, minute, sent, received, loss, warning_level], ... ]'''
     conn = sqlite3.connect(db)
     get_results_ip = conn.execute('select hour,\
@@ -72,7 +71,7 @@ def get_statistic_ip_hour(ip, hour, db):
                                           sent,\
                                           received,\
                                           (sent - received)*100/sent as loss_percent \
-                                            from ping_results where ip=? and hour=?', (ip, hour))
+                                            from ping_results where ip=? and date=? and hour=?', (ip, date, hour))
     get_results_ip = get_results_ip.fetchall()
     conn.close()
     statistic_ip_hour = []
@@ -89,77 +88,63 @@ def get_statistic_ip_hour(ip, hour, db):
     return statistic_ip_hour
 
 
-def get_existing_bases():
-    '''get a list of existing bases with results ['dd.mm.yyyy', ]'''
-    list_existing_bases = []
-    list_dir = os.listdir(path_to_db)
-    for file_name in list_dir:
-        if re.match('^\d\d\.\d\d\.\d\d\d\d-results.sqlite3$', file_name):
-            base = re.sub('-results.sqlite3$', '', file_name)
-            list_existing_bases.append(base)
-    return list_existing_bases
-
-def get_date_list_when_ip_monitored(ip):
-    list_existing_bases = []
-    date_list = []
-    list_dir = os.listdir(path_to_db)
-    for file_name in list_dir:
-        if re.match('^\d\d\.\d\d\.\d\d\d\d-results.sqlite3$', file_name):
-            list_existing_bases.append(file_name)
-    for base_name in list_existing_bases:
-        conn = sqlite3.connect(path_to_db + base_name)
-        get_ip = conn.execute('select * from ping_results where ip=? limit 1', (ip, ))
-        get_ip = get_ip.fetchall();
-        conn.close()
-        if get_ip:
-            date = re.sub('-results.sqlite3$', '', base_name)
-            date_list.append(date)
+def get_date_list_when_ip_monitored(ip_address):
+    conn = sqlite3.connect(db)
+    date_list = conn.execute('select date from ping_results where ip=?', (ip_address, ))
+    date_list = date_list.fetchall() # it returns [ (date1), (date2), ... ]
+    conn.close()
+    date_list = [date[0] for date in date_list] # it returns [ date1, date2, ... ]
     date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%d.%m.%Y'))
     return date_list
  
-def get_group_and_comment_list(group_id='', group_name=''):
+def get_group_and_comment_list(group_id=''):
     '''get group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]'''
     group_list = []
-    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+    conn = sqlite3.connect(db)
     if group_id:
-        group_list = conn.execute('select id, group_name, group_comment from group_list where id=?', (group_id, ))
-    elif group_name:
-        group_list = conn.execute('select id, group_name, group_comment from group_list where group_name=?', (group_name, ))
+        group_list = conn.execute('select id,\
+                                          group_name,\
+                                          group_comment\
+                                            from group_list where id=?', (group_id, ))
     else:
-        group_list = conn.execute('select id, group_name, group_comment from group_list order by id DESC')
+        group_list = conn.execute('select id,\
+                                          group_name,\
+                                          group_comment\
+                                            from group_list order by id DESC')
     group_list = group_list.fetchall()
     return group_list
 
 def update_group_comment(group_id, new_group_comment):
-    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+    conn = sqlite3.connect(db)
     conn.execute('update group_list set group_comment=? where id=?', (new_group_comment, group_id))
     conn.commit()
     conn.close()
 
 def get_group_ip_list(group_id):
     """it returns list [(ip, hostname), (ip2, hostname2) ... ]"""
-    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+    conn = sqlite3.connect(db)
     group_ip_list = conn.execute('select ip, hostname from ip_list where group_id=?', (group_id, ))
     group_ip_list = group_ip_list.fetchall()
     conn.close()
     return group_ip_list
 
 def add_ip_for_monitoring(ip_address, hostname, group_id):
-    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+    conn = sqlite3.connect(db)
     conn.execute('insert into ip_list (ip, hostname, group_id) values (?, ?, ?)', (ip_address, hostname, group_id))
     conn.commit()
     conn.close()
 
 def add_group(group_name, group_comment):
-    conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
-    conn.execute('insert into group_list (group_name, group_comment) values (?, ?)', (group_name, group_comment))
+    conn = sqlite3.connect(db)
+    curs = conn.execute('insert into group_list (group_name, group_comment) values (?, ?)', (group_name, group_comment))
+    new_group_id = curs.lastrowid
     conn.commit()
     conn.close()
+    return new_group_id
 
 def delete_group_from_monitoring(group_id):
-    # check, is group with id=="group_id" exists
     if get_group_and_comment_list(group_id=group_id):
-        conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+        conn = sqlite3.connect(db)
         conn.execute('delete from group_list where id=?', (group_id, ))
         conn.execute('delete from ip_list where group_id=?', (group_id, ))
         conn.commit()
@@ -171,7 +156,7 @@ def delete_ip_from_monitoring(group_id, ip_address):
         group_ip_hostname_list = get_group_ip_list(group_id)
         group_ip_list = [x[0] for x in group_ip_hostname_list]
         if ip_address in group_ip_list:
-            conn = sqlite3.connect(path_to_db+'pinger_db.sqlite3')
+            conn = sqlite3.connect(db)
             conn.execute('delete from ip_list where ip=? and group_id=?', (ip_address, group_id))
             conn.commit()
             conn.close()
@@ -261,9 +246,8 @@ def add_ip():
                 new_group_comment = new_group_comment.decode('utf-8')
             else:
                 new_group_comment = 'not commented'
-            add_group(new_group_name, new_group_comment)
+            new_group_id = add_group(new_group_name, new_group_comment)
             # get group_id of new group as new_group_id
-            new_group_id = get_group_and_comment_list(group_name=new_group_name)[0][0]
 
             add_ip_for_monitoring(ip_addr, hostname, new_group_id)
     else:
@@ -306,14 +290,13 @@ def show_statistic(group_id):
         monitoring_date = time.strftime("%d.%m.%Y", time.localtime())
     date_list = get_date_list_when_ip_monitored(ip_address)
     if monitoring_date in date_list:
-        db = path_to_db + monitoring_date + '-results.sqlite3'
-        ip_statistic = get_statistic_ip_day(ip_address, db)
+        ip_statistic = get_statistic_ip_day(ip_address, monitoring_date)
     else:
         ip_statistic = []
 
     hour = request.query.get('hour')
     if hour:
-        ip_statistic_hour = get_statistic_ip_hour(ip_address, hour, db)
+        ip_statistic_hour = get_statistic_ip_hour(ip_address, monitoring_date, hour)
     else:
         ip_statistic_hour = []
 
