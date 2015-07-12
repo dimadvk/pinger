@@ -7,5 +7,3 @@ db_name='pinger_db.sqlite3'
 ping = '/bin/ping' 
 
 
-#abs_path_to_script = os.path.dirname(__file__)
-#path_to_db = os.path.join(abs_path_to_script, '../database/')

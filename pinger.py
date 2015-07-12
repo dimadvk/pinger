@@ -12,26 +12,14 @@ import os # need for start ping processes
 import sqlite3
 from settings import ping, db_name
 
-#DB_NAME='pinger_db.sqlite3'
-#PING = '/bin/ping' # path to ping utility
-#abs_path_to_script = os.path.dirname(__file__)
-#path_to_db = os.path.join(abs_path_to_script, '../database/')
-
-def initial_db(dbName):
-    conn = sqlite3.connect(dbName)
-    conn.execute('create table ping_results(id integer primary key AUTOINCREMENT, \
-                                            ip text, \
-                                            sent text, \
-                                            received text, \
-                                            date text, \
-                                            hour text, \
-                                            minutes text);')
-    conn.commit()
-    conn.close()
+path_to_script = os.path.dirname(__file__)
+db = os.path.join(path_to_script, db_name)
 
 
-def get_ip_list(database):
-    conn = sqlite3.connect(database)
+##################
+
+def get_ip_list():
+    conn = sqlite3.connect(db)
     get_ip = conn.execute('select ip from ip_list')
     get_ip = get_ip.fetchall()
     conn.close()
@@ -51,7 +39,7 @@ def pinger(ip_list):
     for ip in ip_list:
             ping_results[ip] = ping_processes[ip].readlines()
     ## write results to database >>
-    conn = sqlite3.connect(db_name)
+    conn = sqlite3.connect(db)
     for ip in ping_results:
         statistic = []
         statistic.append(ping_results[ip][3].split(',')[0].split()[0]) # packets transmitted
@@ -63,7 +51,7 @@ def pinger(ip_list):
 
 ####
 
-ipaddr_list = get_ip_list(db_name)
+ipaddr_list = get_ip_list()
 pinger(ipaddr_list)
 
 ####

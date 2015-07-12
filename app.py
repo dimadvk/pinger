@@ -31,10 +31,9 @@ import os
 import re
 from settings import db_name
 
-abs_path_to_script = os.path.dirname(__file__)
-path_to_db = os.path.join(abs_path_to_script, '.')
+path_to_script = os.path.dirname(__file__)
+db = os.path.join(path_to_script, db_name)
 
-db = db_name
 #########
 
 def get_statistic_ip_day(ip, date):
@@ -90,7 +89,7 @@ def get_statistic_ip_hour(ip, date, hour):
 
 def get_date_list_when_ip_monitored(ip_address):
     conn = sqlite3.connect(db)
-    date_list = conn.execute('select date from ping_results where ip=?', (ip_address, ))
+    date_list = conn.execute('select date from ping_results where ip=? group by date', (ip_address, ))
     date_list = date_list.fetchall() # it returns [ (date1), (date2), ... ]
     conn.close()
     date_list = [date[0] for date in date_list] # it returns [ date1, date2, ... ]
