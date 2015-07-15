@@ -19,3 +19,7 @@ How to install and use:
   add string: * * * * * /YoutPath/pinger.py <br>
   where /YourPath/ is absolute path to pinger.py on your machine (e.x. /home/User/pinger/pinger.py)
 5. run web application to manage ip address list and view monitoring results: $ python app.py
+
+Screenshots:
+- [image-1](https://github.com/manonduty/images/pinger.png)
+- [image-2](https://github.com/manonduty/images/pinger1.png)
