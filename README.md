@@ -21,5 +21,5 @@ How to install and use:
 5. run web application to manage ip address list and view monitoring results: $ python app.py
 
 Screenshots:
-- [image-1](https://github.com/manonduty/images/pinger.png)
-- [image-2](https://github.com/manonduty/images/pinger1.png)
+- [image-1](https://www.dropbox.com/s/fm4phtfoldwoq1o/pinger1.png?dl=0)
+- [image-2](https://www.dropbox.com/s/zae6vwqfnrxlcwu/pinger2.png?dl=0)
