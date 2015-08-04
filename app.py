@@ -25,7 +25,8 @@ select hour, ip, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sen
 
 
 from bottle import run, route, error, static_file, template, request, redirect
-import time, datetime
+import time
+import datetime
 import sqlite3
 import os
 import re
