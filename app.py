@@ -45,8 +45,6 @@ def executeSQL(statement, args=''):
         curs.execute(statement, args)
     return curs.fetchall()
 
-
-
 def get_statistic_ip_day(ip, date):
     '''get a day monitoring statistic for ip 
     [[hour, sent, received, loss_percent, hour_num, warning_level], ... ]'''
@@ -101,7 +99,8 @@ def get_date_list_when_ip_monitored(ip_address):
     return date_list
  
 def get_group_and_comment_list(group_id=''):
-    '''get group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]'''
+    '''return group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]
+        or only one group and comment if group_id is specified'''
     if group_id:
         group_list = executeSQL('select id,\
                                         group_name,\
