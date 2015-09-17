@@ -52,11 +52,11 @@ def executeSQL(statement, args=''):
 def get_statistic_ip_day(ip, date):
     '''get a day monitoring statistic for ip 
     [[hour, sent, received, loss_percent, hour_num, warning_level], ... ]'''
-    get_results_ip = executeSQL('select hour, \
-                                        sum(sent),\
-                                        sum(received),\
-                                        (sum(sent)-sum(received))*100/sum(sent) as loss_percent \
-                                           from ping_results where ip=? and date= ? group by hour', (ip, date))
+    get_results_ip = executeSQL('''select hour, 
+                                          sum(sent),
+                                          sum(received),
+                                          (sum(sent)-sum(received))*100/sum(sent) as loss_percent 
+                                            from ping_results where ip=? and date= ? group by hour''', (ip, date))
     statistic_ip = []
     for row in get_results_ip:
         row = list(row)
@@ -76,12 +76,12 @@ def get_statistic_ip_day(ip, date):
 def get_statistic_ip_hour(ip, date, hour):
     '''get a monitoring statistic for ip for specified hour 
     [[hour, minute, sent, received, loss, warning_level], ... ]'''
-    get_results_ip = executeSQL('select hour,\
-                                        minutes,\
-                                        sent,\
-                                        received,\
-                                        (sent - received)*100/sent as loss_percent \
-                                            from ping_results where ip=? and date=? and hour=?', (ip, date, hour))
+    get_results_ip = executeSQL('''select hour,
+                                          minutes,
+                                          sent,
+                                          received,
+                                          (sent - received)*100/sent as loss_percent
+                                              from ping_results where ip=? and date=? and hour=?''', (ip, date, hour))
     statistic_ip_hour = []
     for row in get_results_ip:
         row = list(row)
@@ -105,15 +105,15 @@ def get_date_list_when_ip_monitored(ip_address):
 def get_group_and_comment_list(group_id=''):
     '''get group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]'''
     if group_id:
-        group_list = executeSQL('select id,\
-                                        group_name,\
-                                        group_comment\
-                                            from group_list where id=?', (group_id, ))
+        group_list = executeSQL('''select id,
+                                        group_name,
+                                        group_comment
+                                            from group_list where id=?''', (group_id, ))
     else:
-        group_list = executeSQL('select id,\
-                                        group_name,\
-                                        group_comment\
-                                            from group_list order by id DESC')
+        group_list = executeSQL('''select id,
+                                          group_name,
+                                          group_comment
+                                            from group_list order by id DESC''')
     return group_list
 
 def update_group_comment(group_id, new_group_comment):
