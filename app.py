@@ -135,8 +135,8 @@ def add_group(group_name, group_comment):
     return new_group_id
 
 def delete_group_from_monitoring(group_id):
-    executeSQL('delete from group_list where id=?', (group_id, ))
     executeSQL('delete from ip_list where group_id=?', (group_id, ))
+    executeSQL('delete from group_list where id=?', (group_id, ))
 
 def delete_ip_from_monitoring(group_id, ip_address):
     executeSQL('delete from ip_list where ip=? and group_id=?', (ip_address, group_id))
