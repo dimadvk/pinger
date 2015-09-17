@@ -42,6 +42,8 @@ def executeSQL(statement, args=''):
     Next type of oraguments is required: 'statement' - sql-statement as a string, 'args' - tuple.'''
     with sqlite3.connect(db) as connection:
         curs = connection.cursor()
+        # Foreign key constraints are disabled by default, so must be enabled separately for each database connection
+        curs.execute('PRAGMA FOREIGN_KEYS=ON') 
         curs.execute(statement, args)
     return curs.fetchall()
 
