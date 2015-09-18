@@ -42,17 +42,19 @@ def executeSQL(statement, args=''):
     Next type of oraguments is required: 'statement' - sql-statement as a string, 'args' - tuple.'''
     with sqlite3.connect(db) as connection:
         curs = connection.cursor()
+        # Foreign key constraints are disabled by default, so must be enabled separately for each database connection
+        curs.execute('PRAGMA FOREIGN_KEYS=ON') 
         curs.execute(statement, args)
     return curs.fetchall()
 
 def get_statistic_ip_day(ip, date):
     '''get a day monitoring statistic for ip 
     [[hour, sent, received, loss_percent, hour_num, warning_level], ... ]'''
-    get_results_ip = executeSQL('select hour, \
-                                        sum(sent),\
-                                        sum(received),\
-                                        (sum(sent)-sum(received))*100/sum(sent) as loss_percent \
-                                           from ping_results where ip=? and date= ? group by hour', (ip, date))
+    get_results_ip = executeSQL('''select hour, 
+                                          sum(sent),
+                                          sum(received),
+                                          (sum(sent)-sum(received))*100/sum(sent) as loss_percent 
+                                            from ping_results where ip=? and date= ? group by hour''', (ip, date))
     statistic_ip = []
     for row in get_results_ip:
         row = list(row)
@@ -72,12 +74,12 @@ def get_statistic_ip_day(ip, date):
 def get_statistic_ip_hour(ip, date, hour):
     '''get a monitoring statistic for ip for specified hour 
     [[hour, minute, sent, received, loss, warning_level], ... ]'''
-    get_results_ip = executeSQL('select hour,\
-                                        minutes,\
-                                        sent,\
-                                        received,\
-                                        (sent - received)*100/sent as loss_percent \
-                                            from ping_results where ip=? and date=? and hour=?', (ip, date, hour))
+    get_results_ip = executeSQL('''select hour,
+                                          minutes,
+                                          sent,
+                                          received,
+                                          (sent - received)*100/sent as loss_percent
+                                              from ping_results where ip=? and date=? and hour=?''', (ip, date, hour))
     statistic_ip_hour = []
     for row in get_results_ip:
         row = list(row)
@@ -102,15 +104,15 @@ def get_group_and_comment_list(group_id=''):
     '''return group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]
         or only one group and comment if group_id is specified'''
     if group_id:
-        group_list = executeSQL('select id,\
-                                        group_name,\
-                                        group_comment\
-                                            from group_list where id=?', (group_id, ))
+        group_list = executeSQL('''select id,
+                                        group_name,
+                                        group_comment
+                                            from group_list where id=?''', (group_id, ))
     else:
-        group_list = executeSQL('select id,\
-                                        group_name,\
-                                        group_comment\
-                                            from group_list order by id DESC')
+        group_list = executeSQL('''select id,
+                                          group_name,
+                                          group_comment
+                                            from group_list order by id DESC''')
     return group_list
 
 def update_group_comment(group_id, new_group_comment):
@@ -132,8 +134,8 @@ def add_group(group_name, group_comment):
     return new_group_id
 
 def delete_group_from_monitoring(group_id):
-    executeSQL('delete from group_list where id=?', (group_id, ))
     executeSQL('delete from ip_list where group_id=?', (group_id, ))
+    executeSQL('delete from group_list where id=?', (group_id, ))
 
 def delete_ip_from_monitoring(group_id, ip_address):
     executeSQL('delete from ip_list where ip=? and group_id=?', (ip_address, group_id))
