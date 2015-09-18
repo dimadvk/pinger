@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding:utf-8
 
-# 
+#
 # create table group_list(id integer primary key AUTOINCREMENT, group_name text, group_comment text);
 # create table ip_list (id INTEGER PRIMARY KEY autoincrement, ip text, hostname text, group_id integer);
 #
@@ -13,7 +13,7 @@
 """
 - add checkin is database 'pinger_db.sqlite3' exists when server starts.
     If no 'pinger_db.sqlite3' exists initialize new one.
-- add checking is anyone database with results exists. 
+- add checking is anyone database with results exists.
     If not return page with message 'Can't find any results. Add pinger.py to crontab. Wait 1 minute for first results' or something like this.
 - move all functions (except functions with @route) from here to one specialized module-file
 - убрать кучу файлов с результатами, все писать только в один файл pinger_db.sqlite3
@@ -38,22 +38,22 @@ db = os.path.join(path_to_script, db_name)
 #########
 
 def executeSQL(statement, args=''):
-    '''execute SQL-statement, return result. 
+    '''execute SQL-statement, return result.
     Next type of oraguments is required: 'statement' - sql-statement as a string, 'args' - tuple.'''
     with sqlite3.connect(db) as connection:
         curs = connection.cursor()
         # Foreign key constraints are disabled by default, so must be enabled separately for each database connection
-        curs.execute('PRAGMA FOREIGN_KEYS=ON') 
+        curs.execute('PRAGMA FOREIGN_KEYS=ON')
         curs.execute(statement, args)
     return curs.fetchall()
 
 def get_statistic_ip_day(ip, date):
-    '''get a day monitoring statistic for ip 
+    '''get a day monitoring statistic for ip
     [[hour, sent, received, loss_percent, hour_num, warning_level], ... ]'''
-    get_results_ip = executeSQL('''select hour, 
+    get_results_ip = executeSQL('''select hour,
                                           sum(sent),
                                           sum(received),
-                                          (sum(sent)-sum(received))*100/sum(sent) as loss_percent 
+                                          (sum(sent)-sum(received))*100/sum(sent) as loss_percent
                                             from ping_results where ip=? and date= ? group by hour''', (ip, date))
     statistic_ip = []
     for row in get_results_ip:
@@ -72,7 +72,7 @@ def get_statistic_ip_day(ip, date):
     return statistic_ip
 
 def get_statistic_ip_hour(ip, date, hour):
-    '''get a monitoring statistic for ip for specified hour 
+    '''get a monitoring statistic for ip for specified hour
     [[hour, minute, sent, received, loss, warning_level], ... ]'''
     get_results_ip = executeSQL('''select hour,
                                           minutes,
@@ -99,7 +99,7 @@ def get_date_list_when_ip_monitored(ip_address):
     date_list = [date[0] for date in date_list] # it returns [ date1, date2, ... ]
     date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%d.%m.%Y'))
     return date_list
- 
+
 def get_group_and_comment_list(group_id=''):
     '''return group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]
         or only one group and comment if group_id is specified'''
@@ -139,7 +139,7 @@ def delete_group_from_monitoring(group_id):
 
 def delete_ip_from_monitoring(group_id, ip_address):
     executeSQL('delete from ip_list where ip=? and group_id=?', (ip_address, group_id))
-    
+
 def check_format_ip(ip):
     if re.match('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip):
         return 1
@@ -151,7 +151,7 @@ def check_format_date(date):
         return 1
     else:
         return 0
-   
+
 
 #########
 
@@ -161,6 +161,26 @@ def static_css(filename):
 @route('/img/<filename>')
 def static_img(filename):
     return static_file(filename, root='./static/img/')
+
+@route('/test')
+def test():
+    return """
+    <html>
+    <body>
+        <form method="POST">
+            <input type="hidden" value="del" name="action">
+            <input type="hidden" value="{{row[0][0]}}">
+            <button onclick="submit" type="submit">
+              <span>&#10005;</span>
+            </button>
+        </form>
+    </body>
+    </html>
+    """
+@route('/test', method="POST")
+def test_post():
+    return redirect('/test')
+
 
 @route('/')
 def start_page(error_message=''):
@@ -182,7 +202,7 @@ def start_page(error_message=''):
         group_id = group[0]
         group_ip_list = get_group_ip_list(group_id) # [(ip, hostname), ...]
         monitoring_list.append([group, group_ip_list]) # [[(group_id, group_name, group_comment), [(ip, hostname), ...]], ...]
-    return template('start.html', 
+    return template('start.html',
                     group_list = group_list,
                     monitoring_list = monitoring_list,
                     error_message=error_message,
@@ -229,12 +249,12 @@ def add_ip():
 
 @route('/<group_id:re:\d*>')
 def show_statistic(group_id):
-    if request.query.action:                                                                                                                  
-        if request.query.action == "delete_group" and request.query.group_id:                                                               
+    if request.query.action:
+        if request.query.action == "delete_group" and request.query.group_id:
                 group_id = int(request.query.group_id)
                 delete_group_from_monitoring(group_id)
-                return redirect('/')                                                                                                 
-        elif request.query.action == "delete_ip" and request.query.group_id and request.query.ip_addr:                                        
+                return redirect('/')
+        elif request.query.action == "delete_ip" and request.query.group_id and request.query.ip_addr:
                 group_id = int(request.query.group_id)
                 ip_address = request.query.ip_addr
                 delete_ip_from_monitoring(group_id, ip_address)
@@ -253,7 +273,7 @@ def show_statistic(group_id):
     if ip_address:
         if not check_format_ip(ip_address):
             return redirect('/'+group_id)
-    
+
     date = request.query.get('show-date')
     if date and check_format_date(date):
         monitoring_date = date
@@ -273,36 +293,36 @@ def show_statistic(group_id):
 
     return template('ip_statistic.html',
                     group_info=group_info, # group_info = [(group_id, group_name, group_comment), [(ip, hostname), ...]]
-                    ip_statistic=ip_statistic, 
+                    ip_statistic=ip_statistic,
                     ip_statistic_hour = ip_statistic_hour,
-                    monitoring_date=monitoring_date, 
+                    monitoring_date=monitoring_date,
                     ip_address=ip_address,
                     date_list=date_list,
                     hour=hour,
                     page_title='Statistics - Pinger')
 
-@route('/<group_id:re:\d*>/edit')
+@route('/edit/<group_id:re:\d*>')
 def edit_group(group_id):
     group_id = int(group_id)
     group_and_comment = get_group_and_comment_list(group_id=group_id) # it returns [(group_id, group_name, group_comment)]
     group_and_comment = group_and_comment[0]    # it makes (group_id, group_name, group_comment)
     if not group_and_comment:
         return redirect('/')
-    return template('edit_group.html', 
+    return template('edit_group.html',
                     group_and_comment=group_and_comment,
                     page_title='Edit Comment - Pinger')
 
-@route('/<group_id:re:\d*>/edit', method='POST')
+@route('/edit/<group_id:re:\d*>', method='POST')
 def edit_group_save(group_id):
     group_id = int(group_id)
     group_comment = request.forms.get('edit-group-comment').decode('utf-8')
     update_group_comment(group_id, group_comment)
     return redirect('/')
-    
+
 
 @error(404)
 def error404(error):
-    return '<h1>Page not found. Error 404.</h1> <span>path: ' + request.path + '</span>' 
+    return '<h1>Page not found. Error 404.</h1> <span>path: ' + request.path + '</span>'
 
 run(port=8888, debug=True, reload=True)
 #run(server='cgi')
