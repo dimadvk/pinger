@@ -13,10 +13,6 @@
 """
 - add checkin is database 'pinger_db.sqlite3' exists when server starts.
     If no 'pinger_db.sqlite3' exists initialize new one.
-- add checking is anyone database with results exists.
-    If not return page with message 'Can't find any results. Add pinger.py to crontab. Wait 1 minute for first results' or something like this.
-- move all functions (except functions with @route) from here to one specialized module-file
-- убрать кучу файлов с результатами, все писать только в один файл pinger_db.sqlite3
 - remome monitoring results older than 2 month
 
 
@@ -161,38 +157,6 @@ def static_css(filename):
 @route('/img/<filename>')
 def static_img(filename):
     return static_file(filename, root='./static/img/')
-
-@route('/test')
-def test():
-    return """
-    <html>
-    <body>
-        <form method="POST" name='form_1'>
-            <input type="hidden" value="del" name="action">
-            <input type="hidden" value="{{row[0][0]}}">
-            <button onclick="submit" type="submit">
-              <span>&#10005;</span>
-            </button>
-        </form>
-        <br>
-        <form method="POST" name='form_2'>
-            <input type="hidden" value="edit" name="action">
-            <input type="hidden" value="{{row[0][0]}}">
-            <button onclick="submit" type="submit">
-              <span>&#10005;</span>
-            </button>
-        </form>
-    </body>
-    </html>
-    """
-@route('/test', method="POST")
-def test_post():
-    print request.forms.get('action')
-    print request.forms.get('garbage')
-    for name, item in request.POST.allitems():
-        print request.forms[name]
-    return redirect('/test')
-
 
 @route('/')
 def start_page(error_message=''):
