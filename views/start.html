@@ -11,6 +11,7 @@
             <div class='content'>
                 <span><b>-- Add IP</b></span>
                 <form class='form-add-ip' name='add_ip' method='POST'>
+                    <input type="hidden" name="action" value="add_new_item">
                     <input name='ip' id='ip' type='text' placeholder="111.111.111.111"><b> IP</b>
                     <br>
                     <input name='hostname' id='hostname' type='text' maxlength="38" placeholder="hostname"><b> Hostname</b>
@@ -58,7 +59,7 @@
                             <a href='/{{row[0][0]}}'>{{row[0][1]}}</a>
                         </td>
                         <td class='td-edit-img'>
-                          <form action="/edit/{{row[0][0]}}">
+                          <form action="/edit/{{row[0][0]}}" name="edit_group">
                             <button onclick="submit">
                               <span>&#9998;</span>
                             </button>
@@ -66,8 +67,8 @@
                         </td>
                         <td class='td-delete-img'>
                           <form method='POST' name="delete_group">
-                            <input type="hidden" value="del" name="action">
-                            <input type="hidden" value="{{row[0][0]}}">
+                            <input type="hidden" value="delete_group" name="action">
+                            <input type="hidden" value="{{row[0][0]}}" name="group_id">
                             <button onclick="submit" type="submit">
                               <span>&#10005;</span>
                             </button>
@@ -97,8 +98,9 @@
                         </td>
                         <td class='td-delete-img'>
                           <form method='POST' name="delete_ip">
-                            <input type="hidden" value="del" name="action">
-                            <input type="hidden" value="{{element[0]}}">
+                            <input type="hidden" name="action" value="delete_ip">
+                            <input type="hidden" name="group_id" value="{{row[0][0]}}">
+                            <input type="hidden" name="ip" value="{{element[0]}}">
                             <button onclick="submit" type="submit">
                               <span>&#10005;</span>
                             </button>

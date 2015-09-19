@@ -167,8 +167,16 @@ def test():
     return """
     <html>
     <body>
-        <form method="POST">
+        <form method="POST" name='form_1'>
             <input type="hidden" value="del" name="action">
+            <input type="hidden" value="{{row[0][0]}}">
+            <button onclick="submit" type="submit">
+              <span>&#10005;</span>
+            </button>
+        </form>
+        <br>
+        <form method="POST" name='form_2'>
+            <input type="hidden" value="edit" name="action">
             <input type="hidden" value="{{row[0][0]}}">
             <button onclick="submit" type="submit">
               <span>&#10005;</span>
@@ -179,6 +187,10 @@ def test():
     """
 @route('/test', method="POST")
 def test_post():
+    print request.forms.get('action')
+    print request.forms.get('garbage')
+    for name, item in request.POST.allitems():
+        print request.forms[name]
     return redirect('/test')
 
 
@@ -209,58 +221,57 @@ def start_page(error_message=''):
                     page_title = 'Pinger')
 
 @route('/', method='POST')
-def add_ip():
-    error_message = ''
-    ip_addr = request.forms.get('ip')
-    ip_addr = re.sub('[ ]', '', ip_addr) # just clear any ' ' from string
-    hostname = request.forms.get('hostname').decode('utf-8') # .decode('utf-8') - it needs for sqlite3 accepting cyrillic symbols
-    selected_group_id = request.forms.get('select_group')
-    if selected_group_id:
-        selected_group_id = int(selected_group_id)
-    new_group_name = request.forms.get('new_group_name')
-    new_group_comment = request.forms.get('group_comment')
-    if selected_group_id: # if user want to add ip with one of existing group
-        group_ip_list = get_group_ip_list(selected_group_id) # [(ip_1, hostname_1), (ip_2, hostname_2), ...]
-        group_ip_list = [x[0] for x in group_ip_list] # [ip_1, ip_2, ...]
-        if not check_format_ip(ip_addr):
-            error_message = 'wrong format of IP'
-        elif ip_addr in group_ip_list:
-            error_message = 'IP "'+ ip_addr +'" already exists in that group'
-        else:
-            add_ip_for_monitoring(ip_addr, hostname, selected_group_id)
-    elif new_group_name: # if user enter a new group name
-        new_group_name = new_group_name.decode('utf-8')
-        group_list = get_group_and_comment_list() # it gains [(id_1, group1, comment1), (id_2, group2, comment2)]
-        group_name_list = [x[1] for x in group_list] # it makes group_list == [group1, group2]
-        if new_group_name in group_name_list:
-            error_message = 'the group with the name "'+ new_group_name + '" already exists'
-        elif not check_format_ip(ip_addr):
-            error_message = 'wrong format of IP'
-        else:
-            if new_group_comment:
-                new_group_comment = new_group_comment.decode('utf-8')
+def start_page_post():
+    action = request.forms.get('action')
+    if action == 'add_new_item':
+        error_message = ''
+        ip_addr = request.forms.get('ip')
+        ip_addr = re.sub('[ ]', '', ip_addr) # just clear any ' ' from string
+        hostname = request.forms.get('hostname').decode('utf-8') # .decode('utf-8') - it needs for sqlite3 accepting cyrillic symbols
+        selected_group_id = request.forms.get('select_group')
+        new_group_name = request.forms.get('new_group_name')
+        new_group_comment = request.forms.get('group_comment')
+        if selected_group_id: # if user want to add ip with one of existing group
+            selected_group_id = int(selected_group_id)
+            group_ip_list = get_group_ip_list(selected_group_id) # [(ip_1, hostname_1), (ip_2, hostname_2), ...]
+            group_ip_list = [x[0] for x in group_ip_list] # [ip_1, ip_2, ...]
+            if not check_format_ip(ip_addr):
+                error_message = 'wrong format of IP'
+            elif ip_addr in group_ip_list:
+                error_message = 'IP "'+ ip_addr +'" already exists in that group'
             else:
-                new_group_comment = 'not commented'
-            new_group_id = add_group(new_group_name, new_group_comment)
-            add_ip_for_monitoring(ip_addr, hostname, new_group_id)
-    else:
-        error_message = 'The name of new group is needed'
-    return start_page(error_message)
+                add_ip_for_monitoring(ip_addr, hostname, selected_group_id)
+        elif new_group_name: # if user enter a new group name
+            new_group_name = new_group_name.decode('utf-8')
+            group_list = get_group_and_comment_list() # it gains [(id_1, group1, comment1), (id_2, group2, comment2)]
+            group_name_list = [x[1] for x in group_list] # it makes group_list == [group1, group2]
+            if new_group_name in group_name_list:
+                error_message = 'the group with the name "'+ new_group_name + '" already exists'
+            elif not check_format_ip(ip_addr):
+                error_message = 'wrong format of IP'
+            else:
+                if new_group_comment:
+                    new_group_comment = new_group_comment.decode('utf-8')
+                else:
+                    new_group_comment = 'not commented'
+                new_group_id = add_group(new_group_name, new_group_comment)
+                add_ip_for_monitoring(ip_addr, hostname, new_group_id)
+        else:
+            error_message = 'The name of new group is needed'
+        return start_page(error_message)
+
+    elif action == "delete_group":
+        group_id = int(request.forms.get('group_id'))
+        delete_group_from_monitoring(group_id)
+        return redirect('/')
+    elif action == "delete_ip":
+        group_id = int(request.forms.get('group_id'))
+        ip_address = request.forms.get('ip')
+        delete_ip_from_monitoring(group_id, ip_address)
+        return redirect('/')
 
 @route('/<group_id:re:\d*>')
 def show_statistic(group_id):
-    if request.query.action:
-        if request.query.action == "delete_group" and request.query.group_id:
-                group_id = int(request.query.group_id)
-                delete_group_from_monitoring(group_id)
-                return redirect('/')
-        elif request.query.action == "delete_ip" and request.query.group_id and request.query.ip_addr:
-                group_id = int(request.query.group_id)
-                ip_address = request.query.ip_addr
-                delete_ip_from_monitoring(group_id, ip_address)
-                return redirect(request.path)
-        else:
-                return redirect(request.path)
     group_info = []
     group_id_name_comment = get_group_and_comment_list(group_id=group_id)
     if not group_id_name_comment:
@@ -300,6 +311,20 @@ def show_statistic(group_id):
                     date_list=date_list,
                     hour=hour,
                     page_title='Statistics - Pinger')
+
+@route('/<:re:\d*>', method='POST') # '/<group_id>'
+def group_page_post():
+    action = request.forms.get('action')
+    if action == "delete_group":
+        group_id = int(request.forms.get('group_id'))
+        delete_group_from_monitoring(group_id)
+        return redirect('/')
+    elif action == "delete_ip":
+        group_id = int(request.forms.get('group_id'))
+        ip_address = request.forms.get('ip')
+        delete_ip_from_monitoring(group_id, ip_address)
+        return redirect(request.path)
+
 
 @route('/edit/<group_id:re:\d*>')
 def edit_group(group_id):
