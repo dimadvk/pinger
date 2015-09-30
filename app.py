@@ -45,12 +45,12 @@ def executeSQL(statement, args=''):
 
 def get_statistic_ip_day(ip, date):
     '''get a day monitoring statistic for ip
-    [[hour, sent, received, loss_percent, hour_num, warning_level], ... ]'''
-    get_results_ip = executeSQL('''select hour,
+    [[hour, sent, received, loss_percent], ... ]'''
+    get_results_ip = executeSQL('''select strftime('%H', date_time),
                                           sum(sent),
                                           sum(received),
                                           (sum(sent)-sum(received))*100/sum(sent) as loss_percent
-                                            from ping_results where ip=? and date= ? group by hour''', (ip, date))
+                                            from ping_results where ip=? and date(date_time)= ? group by strftime('%H', date_time)''', (ip, date))
     statistic_ip = []
     for row in get_results_ip:
         row = list(row)
@@ -70,12 +70,12 @@ def get_statistic_ip_day(ip, date):
 def get_statistic_ip_hour(ip, date, hour):
     '''get a monitoring statistic for ip for specified hour
     [[hour, minute, sent, received, loss, warning_level], ... ]'''
-    get_results_ip = executeSQL('''select hour,
-                                          minutes,
+    get_results_ip = executeSQL('''select strftime('%H', date_time),
+                                          strftime('%M', date_time),
                                           sent,
                                           received,
                                           (sent - received)*100/sent as loss_percent
-                                              from ping_results where ip=? and date=? and hour=?''', (ip, date, hour))
+                                              from ping_results where ip=? and date(date_time)=? and strftime('%H', date_time)=?''', (ip, date, hour))
     statistic_ip_hour = []
     for row in get_results_ip:
         row = list(row)
@@ -91,9 +91,10 @@ def get_statistic_ip_hour(ip, date, hour):
 
 
 def get_date_list_when_ip_monitored(ip_address):
-    date_list = executeSQL('select date from ping_results where ip=? group by date', (ip_address, ))
+    '''Return list of dates when ip where monitored [ 'date_1', 'date_2', ... ]'''
+    date_list = executeSQL('''select date(date_time) from ping_results where ip=? group by date(date_time)''', (ip_address, ))
     date_list = [date[0] for date in date_list] # it returns [ date1, date2, ... ]
-    date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%d.%m.%Y'))
+    date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d'))
     return date_list
 
 def get_group_and_comment_list(group_id=''):
@@ -253,7 +254,7 @@ def show_statistic(group_id):
     if date and check_format_date(date):
         monitoring_date = date
     else:
-        monitoring_date = time.strftime("%d.%m.%Y", time.localtime())
+        monitoring_date = time.strftime("%Y-%m-%d")
     date_list = get_date_list_when_ip_monitored(ip_address)
     if monitoring_date in date_list:
         ip_statistic = get_statistic_ip_day(ip_address, monitoring_date)

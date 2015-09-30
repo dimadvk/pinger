@@ -13,22 +13,20 @@ Error: File "%s" already exists.
     exit()
 
 with sqlite3.connect(db) as conn:
-    conn.execute('''CREATE TABLE group_list 
-                    (id integer primary key AUTOINCREMENT, \
-                     group_name text, \
+    conn.execute('''CREATE TABLE group_list
+                    (id integer primary key AUTOINCREMENT,
+                     group_name text,
                      group_comment text)''')
-    conn.execute('''CREATE TABLE ip_list 
-                    (id integer primary key AUTOINCREMENT, \
-                     ip text, \
-                     hostname text, \
-                     group_id integer, \
+    conn.execute('''CREATE TABLE ip_list
+                    (id integer primary key AUTOINCREMENT,
+                     ip text,
+                     hostname text,
+                     group_id integer,
                      foreign key(group_id) references group_list(id))''')
-    conn.execute('''CREATE TABLE ping_results 
-                    (id integer primary key AUTOINCREMENT, \
-                     ip text, \
-                     sent text, \
-                     received text, \
-                     date text, \
-                     hour text, \
-                     minutes text)''')
+    conn.execute('''CREATE TABLE ping_results
+                    (id integer primary key AUTOINCREMENT,
+                     date_time text,
+                     ip text,
+                     sent text,
+                     received text)''')
 
