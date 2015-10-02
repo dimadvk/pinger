@@ -58,11 +58,12 @@ def pinger(ip_list):
 
 def delete_old_results(count_of_days):
     '''Remove monitoring results older than "count_of_days" days '''
-    executeSQL('''delete from ping_results where date_time < date('now', '-? days')''', (count_of_days, ))
+    statement = '''delete from ping_results where date_time < date('now', '-{} days')'''.format(count_of_days)
+    executeSQL(statement)
 
 ####
 
 ipaddr_list = get_ip_list()
 pinger(ipaddr_list)
-delete_old_results('10')
+delete_old_results('1')
 ####
