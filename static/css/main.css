@@ -81,11 +81,8 @@ input{
 .content table{
     border-collapse:collapse;
 }
-td{
-    padding:2px 0 2px 0;
-}
 .mon-list-separator{
-    background: #D0D0D0;
+    background: #D3D3D3;
     width:800px
 }
 .mon-list-groupname-row{

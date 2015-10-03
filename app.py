@@ -20,7 +20,7 @@
 ######################
 
 
-from bottle import run, route, error, static_file, template, request, redirect
+from bottle import run, route, HTTPError, static_file, template, request, redirect
 import time
 import datetime
 import sqlite3
@@ -46,11 +46,11 @@ def executeSQL(statement, args=''):
 def get_statistic_ip_day(ip, date):
     '''get a day monitoring statistic for ip
     [[hour, sent, received, loss_percent], ... ]'''
-    get_results_ip = executeSQL('''select strftime('%H', date_time),
+    get_results_ip = executeSQL('''SELECT strftime('%H', date_time),
                                           sum(sent),
                                           sum(received),
                                           (sum(sent)-sum(received))*100/sum(sent) as loss_percent
-                                            from ping_results where ip=? and date(date_time)= ? group by strftime('%H', date_time)''', (ip, date))
+                                            from ping_results where ip=? and date(date_time)=? group by strftime('%H', date_time)''', (ip, date))
     statistic_ip = []
     for row in get_results_ip:
         row = list(row)
@@ -70,7 +70,7 @@ def get_statistic_ip_day(ip, date):
 def get_statistic_ip_hour(ip, date, hour):
     '''get a monitoring statistic for ip for specified hour
     [[hour, minute, sent, received, loss, warning_level], ... ]'''
-    get_results_ip = executeSQL('''select strftime('%H', date_time),
+    get_results_ip = executeSQL('''SELECT strftime('%H', date_time),
                                           strftime('%M', date_time),
                                           sent,
                                           received,
@@ -92,25 +92,30 @@ def get_statistic_ip_hour(ip, date, hour):
 
 def get_date_list_when_ip_monitored(ip_address):
     '''Return list of dates when ip where monitored [ 'date_1', 'date_2', ... ]'''
-    date_list = executeSQL('''select date(date_time) from ping_results where ip=? group by date(date_time)''', (ip_address, ))
+    date_list = executeSQL('''SELECT date(date_time) from ping_results where ip=? group by date(date_time)''', (ip_address, ))
     date_list = [date[0] for date in date_list] # it returns [ date1, date2, ... ]
     date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d'))
     return date_list
 
-def get_group_and_comment_list(group_id=''):
+def get_group_and_comment_list():
     '''return group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]
         or only one group and comment if group_id is specified'''
-    if group_id:
-        group_list = executeSQL('''select id,
-                                        group_name,
-                                        group_comment
-                                            from group_list where id=?''', (group_id, ))
-    else:
-        group_list = executeSQL('''select id,
-                                          group_name,
-                                          group_comment
-                                            from group_list order by id DESC''')
+    group_list = executeSQL('''SELECT id,
+                                      group_name,
+                                      group_comment
+                                        from group_list order by id DESC''')
     return group_list
+
+def get_group_name_and_comment(group_id):
+    '''return tuple with group name and comment for specified group_id: (group_id, group_name, group_comment)'''
+    group_name_and_comment = executeSQL('''SELECT id,
+                                      group_name,
+                                      group_comment
+                                        from group_list where id=?''', (group_id, ))
+    # check if group_name_and_comment is not empty, extract tuple from list.
+    if group_name_and_comment:
+        group_name_and_comment = group_name_and_comment[0]
+    return group_name_and_comment
 
 def update_group_comment(group_id, new_group_comment):
     """update comment for one group"""
@@ -118,24 +123,24 @@ def update_group_comment(group_id, new_group_comment):
 
 def get_group_ip_list(group_id):
     """it returns list [(ip, hostname), (ip2, hostname2) ... ]"""
-    group_ip_list = executeSQL('select ip, hostname from ip_list where group_id=?', (group_id, ))
+    group_ip_list = executeSQL('SELECT ip, hostname from ip_list where group_id=?', (group_id, ))
     return group_ip_list
 
 def add_ip_for_monitoring(ip_address, hostname, group_id):
-    executeSQL('insert into ip_list (ip, hostname, group_id) values (?, ?, ?)', (ip_address, hostname, group_id))
+    executeSQL('INSERT INTO ip_list (ip, hostname, group_id) values (?, ?, ?)', (ip_address, hostname, group_id))
 
 def add_group(group_name, group_comment):
-    executeSQL('insert into group_list (group_name, group_comment) values (?, ?)', (group_name, group_comment))
-    new_group_id = executeSQL('select seq from sqlite_sequence where name="group_list"')
+    executeSQL('INSERT INTO group_list (group_name, group_comment) values (?, ?)', (group_name, group_comment))
+    new_group_id = executeSQL('SELECT seq FROM sqlite_sequence where name="group_list"')
     new_group_id = new_group_id[0][0] # it makes: [(id, )] >> id
     return new_group_id
 
 def delete_group_from_monitoring(group_id):
-    executeSQL('delete from ip_list where group_id=?', (group_id, ))
-    executeSQL('delete from group_list where id=?', (group_id, ))
+    executeSQL('DELETE FROM ip_list where group_id=?', (group_id, ))
+    executeSQL('DELETE FROM group_list where id=?', (group_id, ))
 
 def delete_ip_from_monitoring(group_id, ip_address):
-    executeSQL('delete from ip_list where ip=? and group_id=?', (ip_address, group_id))
+    executeSQL('DELETE FROM ip_list where ip=? and group_id=?', (ip_address, group_id))
 
 def check_format_ip(ip):
     if re.match('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip):
@@ -144,7 +149,7 @@ def check_format_ip(ip):
         return 0
 
 def check_format_date(date):
-    if re.match('^(3[01]|2[0-9]|[01][0-9])\.(1[012]|0[1-9])\.([12][0-9][0-9][0-9])$', date):
+    if re.match('([12][0-9][0-9][0-9])\-(1[012]|0[1-9])\-(3[01]|2[0-9]|[01][0-9])$', date):
         return 1
     else:
         return 0
@@ -235,14 +240,17 @@ def start_page_post():
         delete_ip_from_monitoring(group_id, ip_address)
         return redirect('/')
 
+# /<number>
 @route('/<group_id:re:\d*>')
 def show_statistic(group_id):
     group_info = []
-    group_id_name_comment = get_group_and_comment_list(group_id=group_id)
-    if not group_id_name_comment:
-        return redirect(request.path)
-    else:
-        group_info.append(group_id_name_comment[0])
+    group_id_name_comment = get_group_name_and_comment(group_id)
+
+    # if group_id_name_comment is empty - raise an error 404
+    if not len(group_id_name_comment):
+        raise HTTPError(404, "Not found: " + repr(request.path))
+
+    group_info.append(group_id_name_comment)    
     group_ip_list = get_group_ip_list(group_id)
     group_info.append(group_ip_list)
     ip_address = request.query.get('ip')
@@ -310,9 +318,9 @@ def edit_group_save(group_id):
     return redirect('/')
 
 
-@error(404)
-def error404(error):
-    return '<h1>Page not found. Error 404.</h1> <span>path: ' + request.path + '</span>'
+#@error(404)
+#def error404(error):
+#    return '<h1>Page not found. Error 404.</h1> <span>path: ' + request.path + '</span>'
 
 #run(port=8888, debug=True, reload=True)
 #run(server='cgi')
