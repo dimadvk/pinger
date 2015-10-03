@@ -1,25 +1,6 @@
 #!/usr/bin/env python
 # coding:utf-8
 
-#
-# create table group_list(id integer primary key AUTOINCREMENT, group_name text, group_comment text);
-# create table ip_list (id INTEGER PRIMARY KEY autoincrement, ip text, hostname text, group_id integer);
-#
-# select hour, ip, sum(sent), sum(received), (sum(sent)-sum(received))*100/sum(sent) as loss from ping_results  group by ip, hour order by ip;
-
-
-
-##### To Do List #####
-"""
-- add checkin is database 'pinger_db.sqlite3' exists when server starts.
-    If no 'pinger_db.sqlite3' exists initialize new one.
-- remome monitoring results older than 2 month
-
-
-"""
-######################
-
-
 from bottle import run, route, HTTPError, static_file, template, request, redirect
 import time
 import datetime
