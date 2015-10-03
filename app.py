@@ -34,7 +34,7 @@ def get_statistic_ip_day(ip, date):
                                           sum(sent),
                                           sum(received),
                                           (sum(sent)-sum(received))*100/sum(sent) as loss_percent
-                                            from ping_results where ip=? and date(date_time)=? group by strftime('%H', date_time)''', (ip, date))
+                                            FROM ping_results WHERE ip=? and date(date_time)=? GROUP BY strftime('%H', date_time)''', (ip, date))
     statistic_ip = []
     for row in get_results_ip:
         row = list(row)
@@ -59,7 +59,7 @@ def get_statistic_ip_hour(ip, date, hour):
                                           sent,
                                           received,
                                           (sent - received)*100/sent as loss_percent
-                                              from ping_results where ip=? and date(date_time)=? and strftime('%H', date_time)=?''', (ip, date, hour))
+                                              FROM ping_results WHERE ip=? and date(date_time)=? and strftime('%H', date_time)=?''', (ip, date, hour))
     statistic_ip_hour = []
     for row in get_results_ip:
         row = list(row)
@@ -79,7 +79,7 @@ def get_date_list_when_ip_monitored(ip_address):
     Return list of dates when ip where monitored 
     [ 'date_1', 'date_2', ... ]
     """
-    date_list = executeSQL('''SELECT date(date_time) from ping_results where ip=? group by date(date_time)''', (ip_address, ))
+    date_list = executeSQL('''SELECT date(date_time) FROM ping_results WHERE ip=? GROUP BY date(date_time)''', (ip_address, ))
     date_list = [date[0] for date in date_list] # it returns [ date1, date2, ... ]
     date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d'))
     return date_list
@@ -92,7 +92,7 @@ def get_group_and_comment_list():
     group_list = executeSQL('''SELECT id,
                                       group_name,
                                       group_comment
-                                        from group_list order by id DESC''')
+                                        FROM group_list order by id DESC''')
     return group_list
 
 def get_group_name_and_comment(group_id):
@@ -103,7 +103,7 @@ def get_group_name_and_comment(group_id):
     group_name_and_comment = executeSQL('''SELECT id,
                                       group_name,
                                       group_comment
-                                        from group_list where id=?''', (group_id, ))
+                                        FROM group_list WHERE id=?''', (group_id, ))
     # check if group_name_and_comment is not empty, extract tuple from list.
     if group_name_and_comment:
         group_name_and_comment = group_name_and_comment[0]
@@ -111,28 +111,30 @@ def get_group_name_and_comment(group_id):
 
 def update_group_comment(group_id, new_group_comment):
     """update comment for one group"""
-    executeSQL('update group_list set group_comment=? where id=?', (new_group_comment, group_id))
+    executeSQL('update group_list set group_comment=? WHERE id=?', (new_group_comment, group_id))
 
 def get_group_ip_list(group_id):
     """it returns list [(ip, hostname), (ip2, hostname2) ... ]"""
-    group_ip_list = executeSQL('SELECT ip, hostname from ip_list where group_id=?', (group_id, ))
+    group_ip_list = executeSQL('SELECT ip, hostname FROM ip_list WHERE group_id=?', (group_id, ))
     return group_ip_list
 
 def add_ip_for_monitoring(ip_address, hostname, group_id):
-    executeSQL('INSERT INTO ip_list (ip, hostname, group_id) values (?, ?, ?)', (ip_address, hostname, group_id))
+    executeSQL('INSERT INTO ip_list (ip, hostname, group_id) VALUES (?, ?, ?)', (ip_address, hostname, group_id))
 
 def add_group(group_name, group_comment):
-    executeSQL('INSERT INTO group_list (group_name, group_comment) values (?, ?)', (group_name, group_comment))
-    new_group_id = executeSQL('SELECT seq FROM sqlite_sequence where name="group_list"')
-    new_group_id = new_group_id[0][0] # it makes: [(id, )] >> id
+    with sqlite3.connect(db) as connection:
+        curs = connection.cursor()
+        curs.execute('INSERT INTO group_list (group_name, group_comment) VALUES (?, ?)', (group_name, group_comment))
+        # get 'id' of group that where just been made
+        new_group_id = curs.lastrowid
     return new_group_id
 
 def delete_group_from_monitoring(group_id):
-    executeSQL('DELETE FROM ip_list where group_id=?', (group_id, ))
-    executeSQL('DELETE FROM group_list where id=?', (group_id, ))
+    executeSQL('DELETE FROM ip_list WHERE group_id=?', (group_id, ))
+    executeSQL('DELETE FROM group_list WHERE id=?', (group_id, ))
 
 def delete_ip_from_monitoring(group_id, ip_address):
-    executeSQL('DELETE FROM ip_list where ip=? and group_id=?', (ip_address, group_id))
+    executeSQL('DELETE FROM ip_list WHERE ip=? and group_id=?', (ip_address, group_id))
 
 def check_format_ip(ip):
     if re.match('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip):

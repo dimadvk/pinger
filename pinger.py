@@ -49,17 +49,17 @@ def pinger(ip_list):
         statistic = []
         statistic.append(ping_results[ip][3].split(',')[0].split()[0]) # packets transmitted
         statistic.append(ping_results[ip][3].split(',')[1].split()[0]) # packets received
-        executeSQL('''insert into ping_results(date_time,
+        executeSQL('''INSERT INTO ping_results(date_time,
                                                ip,
                                                sent,
-                                               received) values (?, ?, ?, ?)''', (current_time,
+                                               received) VALUES (?, ?, ?, ?)''', (current_time,
                                                                                  ip,
                                                                                  statistic[0],
                                                                                  statistic[1]))
 
 def delete_old_results(count_of_days):
     """Remove monitoring results older than "count_of_days" days """
-    statement = '''delete from ping_results where date(date_time) <= date('now', '-{} days')'''.format(count_of_days)
+    statement = '''DELETE FROM ping_results WHERE date(date_time) <= date('now', '-{} days')'''.format(count_of_days)
     executeSQL(statement)
 
 ####
