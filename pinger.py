@@ -18,22 +18,25 @@ db = os.path.join(path_to_script, db_name)
 
 ##################
 def executeSQL(statement, args=''):
-    '''execute SQL-statement, return result.
-    Next type of oraguments is required: 'statement' - sql-statement as a string, 'args' - tuple.'''
+    """
+    execute SQL-statement, return result.
+    Next type of oraguments is required: 
+        'statement' - sql-statement as a string, 'args' - tuple.
+    """
     with sqlite3.connect(db) as connection:
         curs = connection.cursor()
         curs.execute(statement, args)
     return curs.fetchall()
 
 def get_ip_list():
-    """Get from database and return list of ip addresses. Dublicates are removed"""
+    """Get from database and return list of ip addresses. Dublicates are filtered"""
     ip_addr_list = executeSQL('SELECT ip FROM ip_list GROUP BY ip')
     # make [ ('ip1',), ('ip2',), ... ] >> to >> ['ip1', 'ip2', ... ]
     ip_addr_list = [ip[0] for ip in ip_addr_list]
     return ip_addr_list
 
 def pinger(ip_list):
-    '''This func starts ping for each IP with option -c60 and put results into database'''
+    """This func starts ping for each IP for one minute and puts the results into database"""
     ping_processes = {}
     ping_results = {}
     current_time = time.strftime("%Y-%m-%d %H:%M") # current date and time "YYYY-mm-dd HH:MM"
@@ -55,7 +58,7 @@ def pinger(ip_list):
                                                                                  statistic[1]))
 
 def delete_old_results(count_of_days):
-    '''Remove monitoring results older than "count_of_days" days '''
+    """Remove monitoring results older than "count_of_days" days """
     statement = '''delete from ping_results where date_time <= date('now', '-{} days')'''.format(count_of_days)
     executeSQL(statement)
 
