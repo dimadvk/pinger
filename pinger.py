@@ -10,7 +10,7 @@
 import time # need for calculate current time
 import os # need for start ping processes
 import sqlite3
-from settings import ping, db_name
+from settings import ping, db_name, day_results_obselete
 
 path_to_script = os.path.dirname(__file__)
 db = os.path.join(path_to_script, db_name)
@@ -66,5 +66,5 @@ def delete_old_results(count_of_days):
 
 ipaddr_list = get_ip_list()
 pinger(ipaddr_list)
-delete_old_results('1')
+delete_old_results(day_results_obselete)
 ####
