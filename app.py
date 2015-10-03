@@ -34,8 +34,11 @@ db = os.path.join(path_to_script, db_name)
 #########
 
 def executeSQL(statement, args=''):
-    '''execute SQL-statement, return result.
-    Next type of oraguments is required: 'statement' - sql-statement as a string, 'args' - tuple.'''
+    """
+    execute SQL-statement, return result.
+    Next type of oraguments is required: 
+      'statement' - sql-statement as a string, 'args' - tuple.
+    """
     with sqlite3.connect(db) as connection:
         curs = connection.cursor()
         # Foreign key constraints are disabled by default, so must be enabled separately for each database connection
@@ -44,8 +47,8 @@ def executeSQL(statement, args=''):
     return curs.fetchall()
 
 def get_statistic_ip_day(ip, date):
-    '''get a day monitoring statistic for ip
-    [[hour, sent, received, loss_percent], ... ]'''
+    """get a day monitoring statistic for ip
+    [[hour, sent, received, loss_percent], ... ]"""
     get_results_ip = executeSQL('''SELECT strftime('%H', date_time),
                                           sum(sent),
                                           sum(received),
@@ -68,8 +71,8 @@ def get_statistic_ip_day(ip, date):
     return statistic_ip
 
 def get_statistic_ip_hour(ip, date, hour):
-    '''get a monitoring statistic for ip for specified hour
-    [[hour, minute, sent, received, loss, warning_level], ... ]'''
+    """get a monitoring statistic for ip for specified hour
+    [[hour, minute, sent, received, loss, warning_level], ... ]"""
     get_results_ip = executeSQL('''SELECT strftime('%H', date_time),
                                           strftime('%M', date_time),
                                           sent,
@@ -91,15 +94,20 @@ def get_statistic_ip_hour(ip, date, hour):
 
 
 def get_date_list_when_ip_monitored(ip_address):
-    '''Return list of dates when ip where monitored [ 'date_1', 'date_2', ... ]'''
+    """
+    Return list of dates when ip where monitored 
+    [ 'date_1', 'date_2', ... ]
+    """
     date_list = executeSQL('''SELECT date(date_time) from ping_results where ip=? group by date(date_time)''', (ip_address, ))
     date_list = [date[0] for date in date_list] # it returns [ date1, date2, ... ]
     date_list.sort(key=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d'))
     return date_list
 
 def get_group_and_comment_list():
-    '''return group list from base as [(id_1, group1, comment1), (id_2, group2, comment2), ...]
-        or only one group and comment if group_id is specified'''
+    """
+    return group list from base
+    [(id_1, group1, comment1), (id_2, group2, comment2), ...]
+    """
     group_list = executeSQL('''SELECT id,
                                       group_name,
                                       group_comment
@@ -107,7 +115,10 @@ def get_group_and_comment_list():
     return group_list
 
 def get_group_name_and_comment(group_id):
-    '''return tuple with group name and comment for specified group_id: (group_id, group_name, group_comment)'''
+    """
+    return tuple with group name and comment for specified group_id: 
+    (group_id, group_name, group_comment)
+    """
     group_name_and_comment = executeSQL('''SELECT id,
                                       group_name,
                                       group_comment
