@@ -27,12 +27,10 @@ def executeSQL(statement, args=''):
 
 def get_ip_list():
     """Get from database and return list of ip addresses. Dublicates are removed"""
-    get_ip = executeSQL('select ip from ip_list')
-    ipaddr_list = []
-    for ip in get_ip:
-        ipaddr_list.append(ip[0])
-    ipaddr_list = list(set(ipaddr_list)) # remove dublicate IP addresses
-    return ipaddr_list
+    ip_addr_list = executeSQL('SELECT ip FROM ip_list GROUP BY ip')
+    # make [ ('ip1',), ('ip2',), ... ] >> to >> ['ip1', 'ip2', ... ]
+    ip_addr_list = [ip[0] for ip in ip_addr_list]
+    return ip_addr_list
 
 def pinger(ip_list):
     '''This func starts ping for each IP with option -c60 and put results into database'''
@@ -64,5 +62,5 @@ def delete_old_results(count_of_days):
 
 ipaddr_list = get_ip_list()
 pinger(ipaddr_list)
-delete_old_results('10')
+#delete_old_results('10')
 ####
