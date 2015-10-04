@@ -36,7 +36,7 @@ def get_ip_list():
     return ip_addr_list
 
 def pinger(ip_list):
-    """This func starts ping for each IP for one minute and puts the results into database"""
+    """Starts ping for each IP for one minute and puts the results into database"""
     ping_processes = {}
     ping_results = {}
     current_time = time.strftime("%Y-%m-%d %H:%M") # current date and time "YYYY-mm-dd HH:MM"
