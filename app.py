@@ -119,15 +119,29 @@ def get_group_ip_list(group_id):
     return group_ip_list
 
 def add_ip_for_monitoring(ip_address, hostname, group_id):
-    executeSQL('INSERT INTO ip_list (ip, hostname, group_id) VALUES (?, ?, ?)', (ip_address, hostname, group_id))
+    executeSQL('''INSERT INTO ip_list (ip,
+                                       hostname,
+                                       group_id) VALUES (?, ?, ?)''', (ip_address, hostname, group_id))
 
 def add_group(group_name, group_comment):
     with sqlite3.connect(db) as connection:
         curs = connection.cursor()
-        curs.execute('INSERT INTO group_list (group_name, group_comment) VALUES (?, ?)', (group_name, group_comment))
+        curs.execute('''INSERT INTO 
+                            group_list (group_name, group_comment) 
+                            VALUES (?, ?)''', (group_name, group_comment))
         # get 'id' of group that where just been made
         new_group_id = curs.lastrowid
     return new_group_id
+
+
+#def add_new_group_and_ip(group_name, group_comment, ip_address, hostname):
+#    """Add new group with first IP address for monitoring"""
+#    # last_insert_rowid() - returns id of just created new group
+#    executeSQL('''
+#                INSERT INTO group_list (group_name, group_comment) VALUES (?, ?);
+#                INSERT INTO ip_list (ip, hostname, group_id) VALUES (?, ?, last_insert_rowid());
+#               ''', (group_name, group_comment, ip_address, hostname)) 
+
 
 def delete_group_from_monitoring(group_id):
     executeSQL('DELETE FROM ip_list WHERE group_id=?', (group_id, ))
