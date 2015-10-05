@@ -7,7 +7,7 @@ import datetime
 import sqlite3
 import os
 import re
-from settings import db_name
+from settings import db_name, warning_packetloss_level1, warning_packetloss_level2
 
 path_to_script = os.path.dirname(__file__)
 db = os.path.join(path_to_script, db_name)
@@ -17,12 +17,13 @@ db = os.path.join(path_to_script, db_name)
 def executeSQL(statement, args=''):
     """
     execute SQL-statement, return result.
-    Next type of oraguments is required: 
+    Next format of oraguments is required: 
       'statement' - sql-statement as a string, 'args' - tuple.
     """
     with sqlite3.connect(db) as connection:
         curs = connection.cursor()
-        # Foreign key constraints are disabled by default, so must be enabled separately for each database connection
+        # Foreign key constraints are disabled by default, 
+        # so must be enabled separately for each database connection
         curs.execute('PRAGMA FOREIGN_KEYS=ON')
         curs.execute(statement, args)
     return curs.fetchall()
@@ -30,23 +31,27 @@ def executeSQL(statement, args=''):
 def get_statistic_ip_day(ip, date):
     """get a day monitoring statistic for ip
     [[hour, sent, received, loss_percent], ... ]"""
-    get_results_ip = executeSQL('''SELECT strftime('%H', date_time),
-                                          sum(sent),
-                                          sum(received),
-                                          (sum(sent)-sum(received))*100/sum(sent) as loss_percent
-                                            FROM ping_results WHERE ip=? and date(date_time)=? GROUP BY strftime('%H', date_time)''', (ip, date))
+    get_results_ip = executeSQL('''
+                        SELECT strftime('%H', date_time),
+                               sum(sent),
+                               sum(received),
+                               (sum(sent)-sum(received))*100/sum(sent) as loss_percent
+                            FROM ping_results WHERE ip=? and date(date_time)=? 
+                            GROUP BY strftime('%H', date_time)
+                            ''', (ip, date))
     statistic_ip = []
     for row in get_results_ip:
         row = list(row)
         hour_num = row[0]
         row.append(hour_num)
-        row[0] = row[0]+':00-'+str(int(row[0])+1)+':00' # it makes hour: '01' >> '1:00-2:00'
+        # make hour: '01' >> '1:00-2:00'
+        row[0] = row[0]+':00-'+str(int(row[0])+1)+':00' 
         packetloss = int(row[3])
         if packetloss ==0:
             row.append('')
-        elif 0 < packetloss < 6:
+        elif warning_packetloss_level1 < packetloss < warning_packetloss_level2:
             row.append('warning_packetloss_level1')
-        elif packetloss >= 6:
+        elif packetloss >= warning_packetloss_level2:
             row.append('warning_packetloss_level2')
         statistic_ip.append(row)
     return statistic_ip
@@ -100,10 +105,9 @@ def get_group_name_and_comment(group_id):
     return tuple with group name and comment for specified group_id: 
     (group_id, group_name, group_comment)
     """
-    group_name_and_comment = executeSQL('''SELECT id,
-                                      group_name,
-                                      group_comment
-                                        FROM group_list WHERE id=?''', (group_id, ))
+    group_name_and_comment = executeSQL('''
+                                SELECT id, group_name, group_comment
+                                    FROM group_list WHERE id=?''', (group_id, ))
     # check if group_name_and_comment is not empty, extract tuple from list.
     if group_name_and_comment:
         group_name_and_comment = group_name_and_comment[0]
@@ -111,39 +115,34 @@ def get_group_name_and_comment(group_id):
 
 def update_group_comment(group_id, new_group_comment):
     """update comment for one group"""
-    executeSQL('update group_list set group_comment=? WHERE id=?', (new_group_comment, group_id))
+    executeSQL('''UPDATE group_list 
+                    SET group_comment=? 
+                    WHERE id=?''', (new_group_comment, group_id))
 
 def get_group_ip_list(group_id):
     """it returns list [(ip, hostname), (ip2, hostname2) ... ]"""
-    group_ip_list = executeSQL('SELECT ip, hostname FROM ip_list WHERE group_id=?', (group_id, ))
+    group_ip_list = executeSQL('''SELECT ip, hostname 
+                                    FROM ip_list 
+                                    WHERE group_id=?''', (group_id, ))
     return group_ip_list
 
 def add_ip_for_monitoring(ip_address, hostname, group_id):
-    executeSQL('''INSERT INTO ip_list (ip,
-                                       hostname,
-                                       group_id) VALUES (?, ?, ?)''', (ip_address, hostname, group_id))
+    executeSQL('''INSERT INTO ip_list (ip, hostname, group_id) 
+                    VALUES (?, ?, ?)''', (ip_address, hostname, group_id))
 
 def add_group(group_name, group_comment):
+    """Add new group to databse, return its group_id"""
     with sqlite3.connect(db) as connection:
         curs = connection.cursor()
-        curs.execute('''INSERT INTO 
-                            group_list (group_name, group_comment) 
+        curs.execute('''INSERT INTO group_list (group_name, group_comment) 
                             VALUES (?, ?)''', (group_name, group_comment))
         # get 'id' of group that where just been made
         new_group_id = curs.lastrowid
     return new_group_id
 
-
-#def add_new_group_and_ip(group_name, group_comment, ip_address, hostname):
-#    """Add new group with first IP address for monitoring"""
-#    # last_insert_rowid() - returns id of just created new group
-#    executeSQL('''
-#                INSERT INTO group_list (group_name, group_comment) VALUES (?, ?);
-#                INSERT INTO ip_list (ip, hostname, group_id) VALUES (?, ?, last_insert_rowid());
-#               ''', (group_name, group_comment, ip_address, hostname)) 
-
-
 def delete_group_from_monitoring(group_id):
+    """Delete from monitoring all IP in group with id 'group_id'
+        than delete group."""
     executeSQL('DELETE FROM ip_list WHERE group_id=?', (group_id, ))
     executeSQL('DELETE FROM group_list WHERE id=?', (group_id, ))
 
@@ -165,12 +164,10 @@ def check_format_date(date):
 
 #########
 
+# for static files
 @route('/static/<filename>')
 def static_css(filename):
     return static_file(filename, root='static/css/')
-@route('/img/<filename>')
-def static_img(filename):
-    return static_file(filename, root='./static/img/')
 
 @route('/')
 def start_page(error_message=''):
