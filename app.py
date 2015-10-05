@@ -3,7 +3,6 @@
 
 from bottle import run, route, HTTPError, static_file, template, request, redirect
 import time
-import datetime
 import sqlite3
 import os
 import re
@@ -106,7 +105,7 @@ def get_date_list_when_ip_monitored(ip_address):
 
 def get_group_and_comment_list():
     """
-    return group list from base
+    Return group list from base
     [(id_1, group1, comment1), (id_2, group2, comment2), ...]
     """
     group_list = executeSQL('''
@@ -116,36 +115,47 @@ def get_group_and_comment_list():
 
 def get_group_name_and_comment(group_id):
     """
-    return tuple with group name and comment for specified group_id: 
+    Return tuple with group name and comment for specified group_id: 
     (group_id, group_name, group_comment)
+    If there is no group with that id return empty list
     """
     group_name_and_comment = executeSQL('''
                                 SELECT id, group_name, group_comment
-                                    FROM group_list WHERE id=?''', (group_id, ))
+                                    FROM group_list WHERE id=?
+                                    ''', (group_id, ))
     # check if group_name_and_comment is not empty, extract tuple from list.
     if group_name_and_comment:
         group_name_and_comment = group_name_and_comment[0]
     return group_name_and_comment
 
 def update_group_comment(group_id, new_group_comment):
-    """update comment for one group"""
+    """
+    Update comment for selected group
+    """
     executeSQL('''UPDATE group_list 
                     SET group_comment=? 
                     WHERE id=?''', (new_group_comment, group_id))
 
 def get_group_ip_list(group_id):
-    """it returns list [(ip, hostname), (ip2, hostname2) ... ]"""
+    """
+    It returns list [(ip1, hostname1), (ip2, hostname2) ... ]
+    """
     group_ip_list = executeSQL('''SELECT ip, hostname 
                                     FROM ip_list 
                                     WHERE group_id=?''', (group_id, ))
     return group_ip_list
 
 def add_ip_for_monitoring(ip_address, hostname, group_id):
+    """
+    Add IP to group with id group_id
+    """
     executeSQL('''INSERT INTO ip_list (ip, hostname, group_id) 
                     VALUES (?, ?, ?)''', (ip_address, hostname, group_id))
 
 def add_group(group_name, group_comment):
-    """Add new group to databse, return its group_id"""
+    """
+    Add new group to databse, return its group_id
+    """
     with sqlite3.connect(db) as connection:
         curs = connection.cursor()
         curs.execute('''INSERT INTO group_list (group_name, group_comment) 
@@ -155,21 +165,33 @@ def add_group(group_name, group_comment):
     return new_group_id
 
 def delete_group_from_monitoring(group_id):
-    """Delete from monitoring all IP in group with id 'group_id'
-        than delete group."""
+    """
+    Delete from monitoring all IP in group with id 'group_id'
+    than delete group.
+    """
     executeSQL('DELETE FROM ip_list WHERE group_id=?', (group_id, ))
     executeSQL('DELETE FROM group_list WHERE id=?', (group_id, ))
 
 def delete_ip_from_monitoring(group_id, ip_address):
-    executeSQL('DELETE FROM ip_list WHERE ip=? and group_id=?', (ip_address, group_id))
+    """
+    Delete IP from group with id group_id
+    """
+    executeSQL('''DELETE FROM ip_list 
+                    WHERE ip=? and group_id=?''', (ip_address, group_id))
 
 def check_format_ip(ip):
+    """
+    Check format of IP string
+    """
     if re.match('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip):
         return 1
     else:
         return 0
 
 def check_format_date(date):
+    """
+    Check format of date string
+    """
     if re.match('([12][0-9][0-9][0-9])\-(1[012]|0[1-9])\-(3[01]|2[0-9]|[01][0-9])$', date):
         return 1
     else:
@@ -183,57 +205,63 @@ def check_format_date(date):
 def static_css(filename):
     return static_file(filename, root='static/css/')
 
+# / - start page
 @route('/')
 def start_page(error_message=''):
-    if request.query.action:
-        if request.query.action == "delete_group" and request.query.group_id:
-                group_id = int(request.query.group_id)
-                delete_group_from_monitoring(group_id)
-                return redirect(request.path)
-        elif request.query.action == "delete_ip" and request.query.group_id and request.query.ip_addr:
-                group_id = int(request.query.group_id)
-                ip_address = request.query.ip_addr
-                delete_ip_from_monitoring(group_id, ip_address)
-                return redirect(request.path)
-        else:
-                return redirect(request.path)
     monitoring_list = []
-    group_list = get_group_and_comment_list() # [(group_id, group_name, group_comment), ...]
+    # get [(group_id, group_name, group_comment), ...]
+    group_list = get_group_and_comment_list() 
+    
+    # construct list # [ [(group_id, group_name, group_comment), [(ip, hostname), ...]], ... ]
+    # for rendering html-page 
     for group in group_list:
         group_id = group[0]
-        group_ip_list = get_group_ip_list(group_id) # [(ip, hostname), ...]
-        monitoring_list.append([group, group_ip_list]) # [[(group_id, group_name, group_comment), [(ip, hostname), ...]], ...]
+        # get [(ip, hostname), ...] for group in group_list
+        group_ip_list = get_group_ip_list(group_id)
+        monitoring_list.append([group, group_ip_list]) 
     return template('start.html',
                     group_list = group_list,
                     monitoring_list = monitoring_list,
                     error_message=error_message,
                     page_title = 'Pinger')
 
+# / - start page with POST method
 @route('/', method='POST')
 def start_page_post():
     action = request.forms.get('action')
+
+    # only one of three kind of 'action' could be accepted:
+    # 'add_new_item', 'delete_group', 'delete_ip'
     if action == 'add_new_item':
         error_message = ''
         ip_addr = request.forms.get('ip')
-        ip_addr = re.sub('[ ]', '', ip_addr) # just clear any ' ' from string
-        hostname = request.forms.get('hostname').decode('utf-8') # .decode('utf-8') - it needs for sqlite3 accepting cyrillic symbols
+        # remove leading and trailing whitespace
+        ip_addr = ip_addr.strip()
+        # .decode('utf-8') - it needs for sqlite3 accepting cyrillic symbols
+        hostname = request.forms.get('hostname').decode('utf-8') 
         selected_group_id = request.forms.get('select_group')
         new_group_name = request.forms.get('new_group_name')
         new_group_comment = request.forms.get('group_comment')
-        if selected_group_id: # if user want to add ip with one of existing group
+
+        # user can only chose one of existed groups or enter a name for new group
+        if selected_group_id:
             selected_group_id = int(selected_group_id)
-            group_ip_list = get_group_ip_list(selected_group_id) # [(ip_1, hostname_1), (ip_2, hostname_2), ...]
-            group_ip_list = [x[0] for x in group_ip_list] # [ip_1, ip_2, ...]
+            group_ip_list = get_group_ip_list(selected_group_id) 
+            # make [ (ip1, hostname1), ... ] >> [ ip1, ... ]
+            group_ip_list = [x[0] for x in group_ip_list] 
             if not check_format_ip(ip_addr):
                 error_message = 'wrong format of IP'
             elif ip_addr in group_ip_list:
                 error_message = 'IP "'+ ip_addr +'" already exists in that group'
             else:
                 add_ip_for_monitoring(ip_addr, hostname, selected_group_id)
-        elif new_group_name: # if user enter a new group name
+        # if user enter a new group name than create new group
+        elif new_group_name: 
             new_group_name = new_group_name.decode('utf-8')
-            group_list = get_group_and_comment_list() # it gains [(id_1, group1, comment1), (id_2, group2, comment2)]
-            group_name_list = [x[1] for x in group_list] # it makes group_list == [group1, group2]
+            #get list of group names
+            group_list = get_group_and_comment_list()
+            group_name_list = [x[1] for x in group_list]
+
             if new_group_name in group_name_list:
                 error_message = 'the group with the name "'+ new_group_name + '" already exists'
             elif not check_format_ip(ip_addr):
@@ -242,7 +270,7 @@ def start_page_post():
                 if new_group_comment:
                     new_group_comment = new_group_comment.decode('utf-8')
                 else:
-                    new_group_comment = 'not commented'
+                    new_group_comment = '-'
                 new_group_id = add_group(new_group_name, new_group_comment)
                 add_ip_for_monitoring(ip_addr, hostname, new_group_id)
         else:
@@ -259,9 +287,11 @@ def start_page_post():
         delete_ip_from_monitoring(group_id, ip_address)
         return redirect('/')
 
-# /<number>
+# /<group_id> - open a page for one group
 @route('/<group_id:re:\d*>')
 def show_statistic(group_id):
+    # group_info - a list with data for rendering html-page
+    # format: [ (group_id, group_name, group_comment), [ (ip, hostname), ... ] ]
     group_info = []
     group_id_name_comment = get_group_name_and_comment(group_id)
 
@@ -269,15 +299,23 @@ def show_statistic(group_id):
     if not len(group_id_name_comment):
         raise HTTPError(404, "Not found: " + repr(request.path))
 
-    group_info.append(group_id_name_comment)    
+    group_info.append(group_id_name_comment)
+
+    # get list of IP for specified group
     group_ip_list = get_group_ip_list(group_id)
     group_info.append(group_ip_list)
     ip_address = request.query.get('ip')
+
+    # if IP is specified but in wrong format than redirect to the group page
     if ip_address:
         if not check_format_ip(ip_address):
             return redirect('/'+group_id)
 
     date = request.query.get('show-date')
+    
+    # If 'date' is specified in right format than
+    # show monitoring results for that day.
+    # Show result for current system date in other way.
     if date and check_format_date(date):
         monitoring_date = date
     else:
@@ -295,7 +333,7 @@ def show_statistic(group_id):
         ip_statistic_hour = []
 
     return template('ip_statistic.html',
-                    group_info=group_info, # group_info = [(group_id, group_name, group_comment), [(ip, hostname), ...]]
+                    group_info=group_info,
                     ip_statistic=ip_statistic,
                     ip_statistic_hour = ip_statistic_hour,
                     monitoring_date=monitoring_date,
@@ -304,9 +342,12 @@ def show_statistic(group_id):
                     hour=hour,
                     page_title='Statistics - Pinger')
 
-@route('/<:re:\d*>', method='POST') # '/<group_id>'
+# '/<group_id>' with POST method
+@route('/<:re:\d*>', method='POST')
 def group_page_post():
     action = request.forms.get('action')
+    # There's only one of two kinds of action could be accepted:
+    # 'delete_group', or 'delete_ip'
     if action == "delete_group":
         group_id = int(request.forms.get('group_id'))
         delete_group_from_monitoring(group_id)
@@ -317,18 +358,22 @@ def group_page_post():
         delete_ip_from_monitoring(group_id, ip_address)
         return redirect(request.path)
 
-
+# /edit/<group_id> - edit comment for group
 @route('/edit/<group_id:re:\d*>')
 def edit_group(group_id):
     group_id = int(group_id)
-    group_and_comment = get_group_and_comment_list(group_id=group_id) # it returns [(group_id, group_name, group_comment)]
-    group_and_comment = group_and_comment[0]    # it makes (group_id, group_name, group_comment)
+    # get (group_id, group_name, group_comment)
+    group_and_comment = get_group_name_and_comment(group_id)
+
+    #if no group found for specified group_id than redirect to '/'
     if not group_and_comment:
         return redirect('/')
+
     return template('edit_group.html',
                     group_and_comment=group_and_comment,
                     page_title='Edit Comment - Pinger')
 
+# /edit/<group_id> - save new comment after edit and go to '/'
 @route('/edit/<group_id:re:\d*>', method='POST')
 def edit_group_save(group_id):
     group_id = int(group_id)
@@ -336,10 +381,6 @@ def edit_group_save(group_id):
     update_group_comment(group_id, group_comment)
     return redirect('/')
 
-
-#@error(404)
-#def error404(error):
-#    return '<h1>Page not found. Error 404.</h1> <span>path: ' + request.path + '</span>'
 
 run(port=8888, debug=True, reload=True)
 #run(server='cgi')
