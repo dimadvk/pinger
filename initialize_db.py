@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+# Create database
+
 import os
 import sqlite3
 from settings import db_name
