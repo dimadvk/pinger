@@ -1,7 +1,5 @@
 # pinger
 
-It made for linux, so i'm not sure if it works on other OS.
-
 There are:
 - script pinger.py that fetches ip address list from database, makes ping for each ip and save results to database.
 - web application app.py for managing monitoring list and viewing monitoring results
@@ -19,7 +17,3 @@ How to install and use:
   add string: * * * * * /YourPath/pinger.py <br>
   where /YourPath/ is absolute path to pinger.py on your machine (e.x. /home/User/pinger/pinger.py)
 5. run web application to manage ip address list and view monitoring results: $ python app.py
-
-Screenshots:
-- [image-1](https://www.dropbox.com/s/fm4phtfoldwoq1o/pinger1.png?dl=0)
-- [image-2](https://www.dropbox.com/s/zae6vwqfnrxlcwu/pinger2.png?dl=0)
