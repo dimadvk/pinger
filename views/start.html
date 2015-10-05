@@ -58,14 +58,14 @@
                         <td class='mon-list-groupname' colspan='2'>
                             <a href='/{{row[0][0]}}'>{{row[0][1]}}</a>
                         </td>
-                        <td class='td-edit-img'>
+                        <td class='td-edit-btn'>
                           <form action="/edit/{{row[0][0]}}" name="edit_group">
                             <button onclick="submit">
                               <span>&#9998;</span>
                             </button>
                           </form>
                         </td>
-                        <td class='td-delete-img'>
+                        <td class='td-delete-btn'>
                           <form method='POST' name="delete_group">
                             <input type="hidden" value="delete_group" name="action">
                             <input type="hidden" value="{{row[0][0]}}" name="group_id">
@@ -96,7 +96,7 @@
                         </td>
                         <td>
                         </td>
-                        <td class='td-delete-img'>
+                        <td class='td-delete-btn'>
                           <form method='POST' name="delete_ip">
                             <input type="hidden" name="action" value="delete_ip">
                             <input type="hidden" name="group_id" value="{{row[0][0]}}">
