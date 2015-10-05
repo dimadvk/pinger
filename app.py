@@ -109,10 +109,9 @@ def get_group_and_comment_list():
     return group list from base
     [(id_1, group1, comment1), (id_2, group2, comment2), ...]
     """
-    group_list = executeSQL('''SELECT id,
-                                      group_name,
-                                      group_comment
-                                        FROM group_list order by id DESC''')
+    group_list = executeSQL('''
+                    SELECT id, group_name, group_comment
+                        FROM group_list order by id DESC''')
     return group_list
 
 def get_group_name_and_comment(group_id):
