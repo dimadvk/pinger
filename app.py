@@ -60,7 +60,7 @@ def get_statistic_ip_day(ip, date):
 def get_statistic_ip_hour(ip, date, hour):
     """
     Get a monitoring statistic for ip for specified hour
-    [[hour, minute, sent, received, loss, warning_level], ... ]
+    [ [hour, minute, sent, received, loss_percent], ... ]
     """
     get_results_ip = executeSQL('''
                         SELECT strftime('%H', date_time),
@@ -73,15 +73,16 @@ def get_statistic_ip_hour(ip, date, hour):
                                   and date(date_time)=? 
                                   and strftime('%H', date_time)=?
                             ''', (ip, date, hour))
+    # make a list with results
     statistic_ip_hour = []
     for row in get_results_ip:
         row = list(row)
         packetloss = int(row[4])
         if packetloss ==0:
             row.append('')
-        elif 0 < packetloss < 6:
+        elif warning_packetloss_level1 < packetloss < warning_packetloss_level2:
             row.append('warning_packetloss_level1')
-        elif packetloss >= 6:
+        elif packetloss >= warning_packetloss_level2:
             row.append('warning_packetloss_level2')
         statistic_ip_hour.append(row)
     return statistic_ip_hour
