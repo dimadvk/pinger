@@ -323,16 +323,16 @@ def show_statistic(group_id):
     # If 'date' is specified in right format than
     # show monitoring results for that day.
     # Show result for current system date in other way.
+    date_list = get_date_list_when_ip_monitored(ip_address)
     if date and check_format_date(date):
-        monitoring_date = date
+        if check_format_date(date) and date in date_list:
+            monitoring_date = date
     else:
         monitoring_date = time.strftime("%Y-%m-%d")
-    date_list = get_date_list_when_ip_monitored(ip_address)
-    if monitoring_date in date_list:
-        ip_statistic = get_statistic_ip_day(ip_address, monitoring_date)
-    else:
-        ip_statistic = []
+    ip_statistic = get_statistic_ip_day(ip_address, monitoring_date)
 
+    # if 'hour' is specified in query
+    # show resuls for that hour
     hour = request.query.get('hour')
     if hour:
         ip_statistic_hour = get_statistic_ip_hour(ip_address, monitoring_date, hour)
