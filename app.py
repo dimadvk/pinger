@@ -2,14 +2,18 @@
 # coding:utf-8
 
 from bottle import run, route, HTTPError, static_file, template, request, redirect
+import iptools
 import time
 import sqlite3
 import os
 import re
 from settings import db_name, warning_packetloss_level1, warning_packetloss_level2
 
+# db - absolute path to database file.
 path_to_script = os.path.dirname(__file__)
 db = os.path.join(path_to_script, db_name)
+# IP from this networks cannot be added for monitoring
+blocked_networks = iptools.IpRangeList('224.0.0.0/4', '255.255.255.255')
 
 #########
 
@@ -182,12 +186,14 @@ def delete_ip_from_monitoring(group_id, ip_address):
 
 def check_format_ip(ip):
     """
-    Check format of IP string
+    Check if IP could be added for monitoring
     """
-    if re.match('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip):
-        return 1
+    if not re.match('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip):
+        return False
+    elif ip in blocked_networks:
+        return False
     else:
-        return 0
+        return True
 
 def check_format_date(date):
     """
@@ -251,7 +257,7 @@ def start_page_post():
             # make [ (ip1, hostname1), ... ] >> [ ip1, ... ]
             group_ip_list = [x[0] for x in group_ip_list] 
             if not check_format_ip(ip_addr):
-                error_message = 'wrong format of IP'
+                error_message = "IP {} cannot not be added".format(ip_addr)
             elif ip_addr in group_ip_list:
                 error_message = 'IP "'+ ip_addr +'" already exists in that group'
             else:
