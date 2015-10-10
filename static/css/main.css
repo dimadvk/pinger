@@ -96,6 +96,7 @@ input{
     background: #DFDFDF;
     font-size: 0.9em;
     padding-left:10px;
+    white-space:pre-line;
 }
 .mon-list-ipaddr{
     padding-left:20px;
