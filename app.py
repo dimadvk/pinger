@@ -320,9 +320,8 @@ def show_statistic(group_id):
     # show monitoring results for that day.
     # Show result for current system date in other way.
     date_list = get_date_list_when_ip_monitored(ip_address)
-    if date and check_format_date(date):
-        if check_format_date(date) and date in date_list:
-            monitoring_date = date
+    if date in date_list):
+        monitoring_date = date
     else:
         monitoring_date = time.strftime("%Y-%m-%d")
     ip_statistic = get_statistic_ip_day(ip_address, monitoring_date)
