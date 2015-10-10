@@ -298,7 +298,7 @@ def show_statistic(group_id):
     group_info = []
     group_id_name_comment = get_group_name_and_comment(group_id)
 
-    # if group_id_name_comment is empty - raise an error 404
+    # if group_id_name_comment is empty - requested page cannot be shown. 
     if not len(group_id_name_comment):
         raise HTTPError(404, "Not found: " + repr(request.path))
 
@@ -309,18 +309,16 @@ def show_statistic(group_id):
     group_info.append(group_ip_list)
     ip_address = request.query.get('ip')
 
-    # if IP is specified but in wrong format than redirect to the group page
-    if ip_address:
-        if not check_format_ip(ip_address):
-            return redirect('/'+group_id)
+    # if wrong IP is specified than redirect to group page
+    if ip_address and ip_address not in group_ip_list:
+        return redirect('/'+group_id)
 
     date = request.query.get('show-date')
-    
-    # If 'date' is specified in right format than
+    # If results for specified 'date' and 'IP' exists in database than
     # show monitoring results for that day.
     # Show result for current system date in other way.
     date_list = get_date_list_when_ip_monitored(ip_address)
-    if date in date_list):
+    if date in date_list:
         monitoring_date = date
     else:
         monitoring_date = time.strftime("%Y-%m-%d")
