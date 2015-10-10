@@ -34,7 +34,7 @@ def executeSQL(statement, args=''):
 def get_statistic_ip_day(ip, date):
     """
     Get a day monitoring statistic for ip
-    [[hour, sent, received, loss_percent], ... ]
+    [[hour, sent, received, loss_percent, warning_packetloss_level], ... ]
     """
     get_results_ip = executeSQL('''
                         SELECT strftime('%H', date_time),
@@ -47,10 +47,6 @@ def get_statistic_ip_day(ip, date):
     statistic_ip = []
     for row in get_results_ip:
         row = list(row)
-        hour_num = row[0]
-        row.append(hour_num)
-        # make hour: '01' >> '1:00-2:00'
-        row[0] = row[0]+':00-'+str(int(row[0])+1)+':00' 
         packetloss = int(row[3])
         if packetloss ==0:
             row.append('')
@@ -333,11 +329,14 @@ def show_statistic(group_id):
 
     # if 'hour' is specified in query
     # show resuls for that hour
+    ip_statistic_hour = []
     hour = request.query.get('hour')
-    if hour:
+    available_hours = [x[0] for x in ip_statistic]
+    print available_hours
+    if hour in available_hours:
         ip_statistic_hour = get_statistic_ip_hour(ip_address, monitoring_date, hour)
     else:
-        ip_statistic_hour = []
+        hour = ''
 
     return template('ip_statistic.html',
                     group_info=group_info,
