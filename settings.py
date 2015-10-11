@@ -16,3 +16,6 @@ day_results_obselete = '30'
 #   than red line color
 warning_packetloss_level1 = 0
 warning_packetloss_level2 = 6
+
+# IP from this networks cannot be added for monitoring
+blocked_IpRangeList = iptools.IpRangeList('224.0.0.0/4', '255.255.255.255')

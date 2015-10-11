@@ -7,13 +7,11 @@ import time
 import sqlite3
 import os
 import re
-from settings import db_name, warning_packetloss_level1, warning_packetloss_level2
+from settings import db_name, warning_packetloss_level1, warning_packetloss_level2, blocked_IpRangeList
 
 # db - absolute path to database file.
 path_to_script = os.path.dirname(__file__)
 db = os.path.join(path_to_script, db_name)
-# IP from this networks cannot be added for monitoring
-blocked_networks = iptools.IpRangeList('224.0.0.0/4', '255.255.255.255')
 
 #########
 
@@ -180,18 +178,11 @@ def delete_ip_from_monitoring(group_id, ip_address):
     executeSQL('''DELETE FROM ip_list 
                     WHERE ip=? and group_id=?''', (ip_address, group_id))
 
-def check_format_ip(ip):
-    """
-    Check if IP could be added for monitoring
-    """
-    if not re.match('^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$', ip):
-        return False
-    elif ip in blocked_networks:
-        return False
-    else:
-        return True
 
 def validate(**kwargs):
+    """
+    for validate data some gained by POST or GET query
+    """
     result = {}
     for key in kwargs.keys():
         result[key] = False
@@ -199,7 +190,7 @@ def validate(**kwargs):
     # checking IP
     if 'ip_address' in kwargs.keys():
         if re.match('^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$', ip):
-            if ip not in blocked_networks:
+            if ip not in blocked_IpRangeList:
                 result['ip_address'] = True
   
     # checking group_id
