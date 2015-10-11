@@ -191,15 +191,6 @@ def check_format_ip(ip):
     else:
         return True
 
-def check_format_date(date):
-    """
-    Check format of date string
-    """
-    if re.match('([12][0-9][0-9][0-9])\-(1[012]|0[1-9])\-(3[01]|2[0-9]|[01][0-9])$', date):
-        return 1
-    else:
-        return 0
-
 
 #########
 
@@ -245,6 +236,9 @@ def start_page_post():
         selected_group_id = request.forms.get('select_group')
         new_group_name = request.forms.get('new_group_name')
         new_group_comment = request.forms.get('group_comment')
+
+        # remaster...
+        
 
         # user can only chose one of existed groups or enter a name for new group
         if selected_group_id:
