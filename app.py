@@ -191,6 +191,24 @@ def check_format_ip(ip):
     else:
         return True
 
+def validate(**kwargs):
+    result = {}
+    for key in kwargs.keys():
+        result[key] = False
+    
+    # checking IP
+    if 'ip_address' in kwargs.keys():
+        if check_format_ip(kwargs['ip_address']):
+            result['ip_address'] = True
+  
+    # checking group_id
+    if 'group_id' in kwargs.keys():
+        check_if_exists = executeSQL('SELECT 1 FROM group_list where id=?', (kwargs['group_id'], ))
+        if check_if_exists:
+            result['group_id'] = True
+
+    return result
+
 
 #########
 
@@ -205,7 +223,6 @@ def start_page(error_message=''):
     monitoring_list = []
     # get [(group_id, group_name, group_comment), ...]
     group_list = get_group_and_comment_list() 
-    
     # construct list # [ [(group_id, group_name, group_comment), [(ip, hostname), ...]], ... ]
     # for rendering html-page 
     for group in group_list:
@@ -228,30 +245,34 @@ def start_page_post():
     # 'add_new_item', 'delete_group', 'delete_ip'
     if action == 'add_new_item':
         error_message = ''
-        ip_addr = request.forms.get('ip')
-        # remove leading and trailing whitespace
-        ip_addr = ip_addr.strip()
+        ip_address = request.forms.get('ip')
+        # remove leading and trailing whitespace and check format of IP
+        ip_address = ip_address.strip()
+        #validate if format of IP is correct
+        validate_ip = validate(ip_address=ip_address)
+        if not validate_ip['ip_address']:
+            error_message = "IP '{}' cannot not be added".format(ip_address)
+            return start_page(error_message)
+
         # .decode('utf-8') - it needs for sqlite3 accepting cyrillic symbols
         hostname = request.forms.get('hostname').decode('utf-8') 
         selected_group_id = request.forms.get('select_group')
         new_group_name = request.forms.get('new_group_name')
         new_group_comment = request.forms.get('group_comment')
 
-        # remaster...
-        
-
         # user can only chose one of existed groups or enter a name for new group
         if selected_group_id:
-            selected_group_id = int(selected_group_id)
+            validate_group_id = validate(group_id=selected_group_id)
+            if not validate_group_id['group_id']:
+                return redirect(request.path)
+
             group_ip_hostname_list = get_group_ip_hostname_list(selected_group_id) 
             # make [ (ip1, hostname1), ... ] >> [ ip1, ... ]
             group_ip_list = [x[0] for x in group_ip_hostname_list] 
-            if not check_format_ip(ip_addr):
-                error_message = "IP {} cannot not be added".format(ip_addr)
-            elif ip_addr in group_ip_list:
-                error_message = 'IP "'+ ip_addr +'" already exists in that group'
+            if ip_address in group_ip_list:
+                error_message = 'IP "'+ ip_address +'" already exists in that group'
             else:
-                add_ip_for_monitoring(ip_addr, hostname, selected_group_id)
+                add_ip_for_monitoring(ip_address, hostname, selected_group_id)
         # if user enter a new group name than create new group
         elif new_group_name: 
             new_group_name = new_group_name.decode('utf-8')
@@ -261,28 +282,31 @@ def start_page_post():
 
             if new_group_name in group_name_list:
                 error_message = 'the group with the name "'+ new_group_name + '" already exists'
-            elif not check_format_ip(ip_addr):
-                error_message = 'wrong format of IP'
             else:
                 if new_group_comment:
                     new_group_comment = new_group_comment.decode('utf-8')
                 else:
                     new_group_comment = '-'
                 new_group_id = add_group(new_group_name, new_group_comment)
-                add_ip_for_monitoring(ip_addr, hostname, new_group_id)
+                add_ip_for_monitoring(ip_address, hostname, new_group_id)
         else:
             error_message = 'The name of new group is needed'
         return start_page(error_message)
-
+    # END if action == 'add_new_item':
     elif action == "delete_group":
-        group_id = int(request.forms.get('group_id'))
+        group_id = request.forms.get('group_id')
+        validate_group_id = validate(group_id=group_id)
+        if not validate_group_id['group_id']:
+            return redirect(request.path)
         delete_group_from_monitoring(group_id)
-        return redirect('/')
+        return redirect(request.path)
     elif action == "delete_ip":
-        group_id = int(request.forms.get('group_id'))
+        group_id = request.forms.get('group_id')
         ip_address = request.forms.get('ip')
-        delete_ip_from_monitoring(group_id, ip_address)
-        return redirect('/')
+        validate_data = validate(group_id=group_id, ip_address=ip_address)
+        if validate_data['group_id'] and validate_data['ip_address']:
+            delete_ip_from_monitoring(group_id, ip_address)
+        return redirect(request.path)
 
 # /<group_id> - open a page for one group
 @route('/<group_id:re:\d*>')
@@ -345,41 +369,42 @@ def group_page_post():
     # There's only one of two kinds of action could be accepted:
     # 'delete_group', or 'delete_ip'
     if action == "delete_group":
-        group_id = int(request.forms.get('group_id'))
+        group_id = request.forms.get('group_id')
+        validate_group_id = validate(group_id=group_id)
+        if not validate_group_id['group_id']:
+            return redirect(request.path)
         delete_group_from_monitoring(group_id)
         return redirect('/')
     elif action == "delete_ip":
-        group_id = int(request.forms.get('group_id'))
+        group_id = request.forms.get('group_id')
         ip_address = request.forms.get('ip')
-        delete_ip_from_monitoring(group_id, ip_address)
+        validate_data = validate(group_id=group_id, ip_address=ip_address)
+        if validate_data['group_id'] and validate_data['ip_address']:
+            delete_ip_from_monitoring(group_id, ip_address)
         return redirect(request.path)
 
 # /edit/<group_id> - edit comment for group
 @route('/edit/<group_id:re:\d*>')
 def edit_group(group_id):
-    group_id = int(group_id)
     # get (group_id, group_name, group_comment)
-    group_and_comment = get_group_name_and_comment(group_id)
+    group_id_name_comment = get_group_name_and_comment(group_id)
 
     #if no group found for specified group_id than redirect to '/'
-    if not group_and_comment:
-        return redirect('/')
+    if not len(group_id_name_comment):
+        raise HTTPError(404, "Not found: " + repr(request.path))
 
     return template('edit_group.html',
-                    group_and_comment=group_and_comment,
+                    group_id_name_comment=group_id_name_comment,
                     page_title='Edit Comment - Pinger')
 
 # /edit/<group_id> - save new comment after edit and go to '/'
 @route('/edit/<group_id:re:\d*>', method='POST')
 def edit_group_save(group_id):
-    group_id = int(group_id)
     group_comment = request.forms.get('edit-group-comment').decode('utf-8')
     update_group_comment(group_id, group_comment)
     return redirect('/')
 
-
-run(port=8888, debug=True, reload=True)
-#run(server='cgi')
+run(port=8888, debug=True, reloader=True, interval=0.5)
 #run(host='192.168.7.49', port=8080, debug=True, reload=True)
 #run(host='195.234.68.26', port=8080, debug=True, reload=True)
 

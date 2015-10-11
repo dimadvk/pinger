@@ -19,7 +19,7 @@
                     <input onclick="document.getElementById('select_group').disabled = false;
                                     document.getElementById('new_group_name').disabled = true;
                                     document.getElementById('group_comment').disabled = true;"
-                           type="radio" name="group" value="customurl" checked>
+                           type="radio" name="group" checked>
                     <select name="select_group" id="select_group">
                       % for row in group_list:
                       <option value='{{row[0]}}'>{{row[1]}}</option>
