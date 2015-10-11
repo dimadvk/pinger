@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import iptools
 #
 # Name of database for storing data
 db_name='db_pinger.sqlite3'
