@@ -16,20 +16,42 @@ db_name='db_pinger.sqlite3'
 path_to_script = os.path.dirname(__file__)
 db = os.path.join(path_to_script, db_name)
 
-# Set scopes of warning level. Color of row in monitoring results depends on that.
+# Set scopes of warning level. Color of row in monitoring results table depends on that.
 # if warning_packetloss_level1 < packet_loss < warning_packetloss_level2
-#   than light_red line color
+#   than lightred line color
 # if packet_loss > warning_packetloss_level2
 #   than red line color
 warning_packetloss_level1 = 0
 warning_packetloss_level2 = 6
 
-# IP from this networks cannot be added for monitoring
+# IP from this network list cannot be added for monitoring
 blocked_IpRangeList = iptools.IpRangeList('224.0.0.0/4', '255.255.255.255')
 
 ### --- ###
 
-#########
+# if there is no database at path 'db' than create one
+if not os.path.isfile(db):
+    with sqlite3.connect(db) as conn:
+        conn.executescript('''
+                CREATE TABLE group_list
+                    (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     group_name text,
+                     group_comment text);
+                CREATE TABLE ip_list
+                    (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     ip text,
+                     hostname text,
+                     group_id integer,
+                     FOREIGN KEY (group_id) REFERENCES group_list(id));
+                CREATE TABLE ping_results
+                    (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     date_time text,
+                     ip text,
+                     sent text,
+                     received text)
+                ''')
+
+##################################################
 
 def executeSQL(statement, args=''):
     """
