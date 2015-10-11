@@ -7,11 +7,27 @@ import time
 import sqlite3
 import os
 import re
-from settings import db_name, warning_packetloss_level1, warning_packetloss_level2, blocked_IpRangeList
 
-# db - absolute path to database file.
+### Global variables ###
+
+# Name of database for storing data
+db_name='db_pinger.sqlite3'
+
 path_to_script = os.path.dirname(__file__)
 db = os.path.join(path_to_script, db_name)
+
+# Set scopes of warning level. Color of row in monitoring results depends on that.
+# if warning_packetloss_level1 < packet_loss < warning_packetloss_level2
+#   than light_red line color
+# if packet_loss > warning_packetloss_level2
+#   than red line color
+warning_packetloss_level1 = 0
+warning_packetloss_level2 = 6
+
+# IP from this networks cannot be added for monitoring
+blocked_IpRangeList = iptools.IpRangeList('224.0.0.0/4', '255.255.255.255')
+
+### --- ###
 
 #########
 

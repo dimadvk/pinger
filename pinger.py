@@ -10,13 +10,22 @@
 import time # need for calculate current time
 import os # need for start ping processes
 import sqlite3
-from settings import ping, db_name, day_results_obselete
 
+### --- ###
+# Name of database for storing data
+db_name='db_pinger.sqlite3'
 path_to_script = os.path.dirname(__file__)
 db = os.path.join(path_to_script, db_name)
 
+# Path to ping utility
+ping = '/bin/ping' 
+
+# Monitoring results older then "days_results_obselete" will be removed from base
+day_results_obselete = '30'
+### --- ###
 
 ##################
+
 def executeSQL(statement, args=''):
     """
     execute SQL-statement, return result.
