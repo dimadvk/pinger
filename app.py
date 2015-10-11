@@ -137,14 +137,14 @@ def update_group_comment(group_id, new_group_comment):
                     SET group_comment=? 
                     WHERE id=?''', (new_group_comment, group_id))
 
-def get_group_ip_list(group_id):
+def get_group_ip_hostname_list(group_id):
     """
     It returns list [(ip1, hostname1), (ip2, hostname2) ... ]
     """
-    group_ip_list = executeSQL('''SELECT ip, hostname 
+    group_ip_hostname_list = executeSQL('''SELECT ip, hostname 
                                     FROM ip_list 
                                     WHERE group_id=?''', (group_id, ))
-    return group_ip_list
+    return group_ip_hostname_list
 
 def add_ip_for_monitoring(ip_address, hostname, group_id):
     """
@@ -220,8 +220,8 @@ def start_page(error_message=''):
     for group in group_list:
         group_id = group[0]
         # get [(ip, hostname), ...] for group in group_list
-        group_ip_list = get_group_ip_list(group_id)
-        monitoring_list.append([group, group_ip_list]) 
+        group_ip_hostname_list = get_group_ip_hostname_list(group_id)
+        monitoring_list.append([group, group_ip_hostname_list]) 
     return template('start.html',
                     group_list = group_list,
                     monitoring_list = monitoring_list,
@@ -249,9 +249,9 @@ def start_page_post():
         # user can only chose one of existed groups or enter a name for new group
         if selected_group_id:
             selected_group_id = int(selected_group_id)
-            group_ip_list = get_group_ip_list(selected_group_id) 
+            group_ip_hostname_list = get_group_ip_hostname_list(selected_group_id) 
             # make [ (ip1, hostname1), ... ] >> [ ip1, ... ]
-            group_ip_list = [x[0] for x in group_ip_list] 
+            group_ip_list = [x[0] for x in group_ip_hostname_list] 
             if not check_format_ip(ip_addr):
                 error_message = "IP {} cannot not be added".format(ip_addr)
             elif ip_addr in group_ip_list:
@@ -305,11 +305,11 @@ def show_statistic(group_id):
     group_info.append(group_id_name_comment)
 
     # get list of IP for specified group
-    group_ip_list = get_group_ip_list(group_id)
-    group_info.append(group_ip_list)
+    group_ip_hostname_list = get_group_ip_hostname_list(group_id)
+    group_info.append(group_ip_hostname_list)
     ip_address = request.query.get('ip')
-
     # if wrong IP is specified than redirect to group page
+    group_ip_list = [x[0] for x in group_ip_hostname_list]
     if ip_address and ip_address not in group_ip_list:
         return redirect('/'+group_id)
 
@@ -329,7 +329,6 @@ def show_statistic(group_id):
     ip_statistic_hour = []
     hour = request.query.get('hour')
     available_hours = [x[0] for x in ip_statistic]
-    print available_hours
     if hour in available_hours:
         ip_statistic_hour = get_statistic_ip_hour(ip_address, monitoring_date, hour)
     else:
