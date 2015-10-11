@@ -198,8 +198,9 @@ def validate(**kwargs):
     
     # checking IP
     if 'ip_address' in kwargs.keys():
-        if check_format_ip(kwargs['ip_address']):
-            result['ip_address'] = True
+        if re.match('^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$', ip):
+            if ip not in blocked_networks:
+                result['ip_address'] = True
   
     # checking group_id
     if 'group_id' in kwargs.keys():
