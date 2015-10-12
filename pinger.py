@@ -91,9 +91,16 @@ def pinger(ip_list):
     for ip in ping_results:
         statistic = []
         # packets transmitted
-        statistic.append(ping_results[ip][3].split(',')[0].split()[0])
+        sent = ping_results[ip][3].split(',')[0].split()[0]
         # packets received
-        statistic.append(ping_results[ip][3].split(',')[1].split()[0])
+        received = ping_results[ip][3].split(',')[1].split()[0]
+        try:
+            sent = int(sent)
+            received = int(received)
+        except:
+            sent, received = 1, 0
+        statistic.append(sent)
+        statistic.append(received)
         executeSQL('''
             INSERT INTO ping_results(date_time, ip, sent, received) 
                 VALUES (?, ?, ?, ?)
