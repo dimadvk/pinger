@@ -73,12 +73,12 @@ def get_statistic_ip_day(ip, date):
     [[hour, sent, received, loss_percent, warning_packetloss_level], ... ]
     """
     get_results_ip = executeSQL('''
-                        SELECT strftime('%H', date_time),
+                        SELECT strftime('%H', date_time) as hour,
                                sum(sent),
                                sum(received),
                                (sum(sent)-sum(received))*100/sum(sent) as loss_percent
                             FROM ping_results WHERE ip=? and date(date_time)=? 
-                            GROUP BY strftime('%H', date_time)
+                            GROUP BY hour ORDER BY hour
                             ''', (ip, date))
     statistic_ip = []
     for row in get_results_ip:
