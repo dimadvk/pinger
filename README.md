@@ -10,7 +10,7 @@ First, for convinience, create virtual environment. Run following: <br>
 $ virtualenv pinger <br>
 $ cd pinger <br>
 $ source bin/activate <br>
-Than install pinger with following steps: <br>
+Then install pinger with following steps: <br>
 
 1. clone repository: $ git clone https://github.com/manonduty/pinger
 2. go to created directory "pinger": $ cd pinger/
