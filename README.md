@@ -14,7 +14,7 @@ How to install and use:
 5. add pinger.py to crontab: <br>
     $ crontab -e <br>
   add string: <br>
-  * * * * * /YourPath/pinger.py <br>
+     * * * * * /YourPath/pinger.py <br>
   where /YourPath/ is absolute path to pinger.py on your machine (e.x. /home/User/pinger/pinger.py)
 7. run web application to manage ip address list and view monitoring results: <br>
     $ python app.py
