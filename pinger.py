@@ -10,6 +10,7 @@
 import time # need for calculate current time
 import os # need for start ping processes
 import sqlite3
+import re
 
 ### --- ###
 # Name of database for storing data
@@ -90,10 +91,13 @@ def pinger(ip_list):
     ## write results to database
     for ip in ping_results:
         statistic = []
-        # packets transmitted
-        sent = ping_results[ip][3].split(',')[0].split()[0]
-        # packets received
-        received = ping_results[ip][3].split(',')[1].split()[0]
+        # find a row that contains "packet transmitted "+"packet received" and get the numbers
+        for row in ping_results[ip]:
+            if re.match('^.+packets transmitted.+packets received.+$', row):
+                # packets transmitted
+                sent = row.split(',')[0].split()[0]
+                # packets received
+                received = row.split(',')[1].split()[0]
         try:
             sent = int(sent)
             received = int(received)
@@ -124,3 +128,4 @@ ipaddr_list = get_ip_list()
 pinger(ipaddr_list)
 # delete obsolete monitoring results from database
 delete_old_results(day_results_obselete)
+###################

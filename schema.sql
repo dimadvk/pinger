@@ -10,7 +10,7 @@ CREATE TABLE ip_list
      FOREIGN KEY (group_id) REFERENCES group_list(id));
 CREATE TABLE ping_results
     (id INTEGER PRIMARY KEY AUTOINCREMENT,
-     date_time DATETIME,
+     date_time TEXT,
      ip TEXT,
      sent INTEGER,
      received INTEGER)
