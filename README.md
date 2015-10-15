@@ -13,9 +13,7 @@ How to install and use:
     it creates database pinger_db.sqlite3 (or with the name specified in settings.py)
 5. add pinger.py to crontab: <br>
     $ crontab -e <br>
-  add string: <br>
-     * * * * * /YourPath/pinger.py <br>
-  where /YourPath/ is absolute path to pinger.py on your machine (e.x. /home/User/pinger/pinger.py)
+  set to execute pinger.py every minute
 7. run web application to manage ip address list and view monitoring results: <br>
     $ python app.py
 
