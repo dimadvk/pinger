@@ -2,7 +2,7 @@
 # coding:utf-8
 
 from bottle import run, route, HTTPError, static_file, template, request, redirect
-import iptools
+from iptools import IpRangeList
 import time
 import sqlite3
 import os
@@ -25,7 +25,7 @@ warning_packetloss_level1 = 0
 warning_packetloss_level2 = 6
 
 # IP from this network list cannot be added for monitoring
-blocked_IpRangeList = iptools.IpRangeList('224.0.0.0/4', '255.255.255.255')
+blocked_IpRangeList = IpRangeList('224.0.0.0/4', '255.255.255.255')
 
 ### --- ###
 
@@ -436,5 +436,5 @@ def edit_group_save(group_id):
 
 run(port=8888, debug=True, reloader=True, interval=0.5)
 #run(host='192.168.7.49', port=8080, debug=True, reload=True)
-
+#run(server='cgi')
 ###################
