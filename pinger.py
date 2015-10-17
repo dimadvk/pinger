@@ -93,7 +93,8 @@ def pinger(ip_list):
         statistic = []
         # find a row that contains "packet transmitted "+"packet received" and get the numbers
         for row in ping_results[ip]:
-            if re.match('^.+packets transmitted.+packets received.+$', row):
+            if re.match('^.+transmitted.+received.+$', row):
+                print row
                 # packets transmitted
                 sent = row.split(',')[0].split()[0]
                 # packets received
