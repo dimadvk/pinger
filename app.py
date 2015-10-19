@@ -93,6 +93,18 @@ def get_statistic_ip_day(ip, date):
         statistic_ip.append(row)
     return statistic_ip
 
+def get_last_24h_packetloss(ip):
+    """
+    Get packetloss number for last 24 hours of monitoring
+    Return tuple consists persent and sum number (n%, m)
+    """
+    get_24h_loss = executeSQLi('''
+                        SELECT (sum(sent)-sum(received))*100/sum(sent) as loss_percent,
+                               sum(sent)-sum(received)
+                            FROM ping_results WHERE ip=? and date_time > datetime('now', '-24 hour') 
+                            ''', (ip, ))
+    return get_24h_loss[0]
+
 def get_statistic_ip_hour(ip, date, hour):
     """
     Get a monitoring statistic for ip for specified hour
@@ -355,9 +367,17 @@ def show_statistic(group_id):
     # get list of IP for specified group
     group_ip_hostname_list = get_group_ip_hostname_list(group_id)
     group_info.append(group_ip_hostname_list)
-    ip_address = request.query.get('ip')
-    # if wrong IP is specified than redirect to group page
+
+    # get packetloss numbers for every IP in group
+    24h_packetloss = {}
     group_ip_list = [x[0] for x in group_ip_hostname_list]
+    for ip in group_ip_list():
+        24h_packetloss[ip] = get_last_24h_packetloss(ip)
+        print 24h_packetloss[ip]
+
+    # Check if IP is specified in GET query.
+    # If wrong IP is specified than redirect to group page
+    ip_address = request.query.get('ip')
     if ip_address and ip_address not in group_ip_list:
         return redirect('/'+group_id)
 
