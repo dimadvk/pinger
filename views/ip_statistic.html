@@ -5,10 +5,10 @@
             <div class='content'>
                 <table>
                     <tr>
-                        <td class='mon-list-separator' colspan='4'>&nbsp;</td>
+                        <td class='mon-list-separator' colspan='6'>&nbsp;</td>
                     </tr>
                     <tr class='mon-list-groupname-row'>
-                        <td class='mon-list-groupname' colspan='2'>
+                        <td class='mon-list-groupname' colspan='4'>
                             <a href='/{{group_info[0][0]}}'>{{group_info[0][1]}}</a>
                         </td>
                         <td class='td-edit-btn'>
@@ -29,7 +29,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class='mon-list-comment' colspan='4'>{{group_info[0][2]}}</td>
+                        <td class='mon-list-comment' colspan='6'>{{group_info[0][2]}}</td>
                     </tr>
                     <%
                         i = 2
@@ -45,6 +45,15 @@
                         </td>
                         <td class='mon-list-hostname'>
                             {{element[1]}}
+                        </td>
+                        <td>
+                            <%
+                                loss = last_24h_packetloss[element[0]]
+                            %>
+                            24h loss: {{loss[0]}}%
+                        </td>
+                        <td>
+                        ({{loss[1]}})
                         </td>
                         <td>
                         </td>

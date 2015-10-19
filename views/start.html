@@ -12,9 +12,9 @@
                 <span><b>-- Add IP</b></span>
                 <form class='form-add-ip' name='add_ip' method='POST'>
                     <input type="hidden" name="action" value="add_new_item">
-                    <input name='ip' id='ip' type='text' placeholder="111.111.111.111"><b> IP</b>
+                    <input name='ip' id='ip' type='text' maxlength="50" placeholder="111.111.111.111"><b> IP</b>
                     <br>
-                    <input name='hostname' id='hostname' type='text' maxlength="38" placeholder="hostname"><b> Hostname</b>
+                    <input name='hostname' id='hostname' type='text' maxlength="30" placeholder="hostname"><b> Hostname</b>
                     <br>
                     <input onclick="document.getElementById('select_group').disabled = false;
                                     document.getElementById('new_group_name').disabled = true;

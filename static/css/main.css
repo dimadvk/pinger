@@ -10,7 +10,7 @@ html,body{
 }
 div.container{
     margin:auto;
-    width:800px;
+    width:900px;
     background:#F1F1F1;
     min-height:100%;
     padding-bottom:20px;
@@ -23,7 +23,7 @@ div.content{
 div.footer{
     background:#D3D3D3;
     height:80px;
-    width:800px;
+    width:900px;
     float:bottom;
     margin:auto;
 }
@@ -83,7 +83,7 @@ input{
 }
 .mon-list-separator{
     background: #D3D3D3;
-    width:800px
+    width:900px
 }
 .mon-list-groupname-row{
     background: #DFDFDF;
@@ -100,7 +100,10 @@ input{
 }
 .mon-list-ipaddr{
     padding-left:20px;
-    width:160px;
+    width: 160px;
+}
+.mon-list-hostname{
+    width: 450px;
 }
 .mon-list-ip-row0{
 }

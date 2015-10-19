@@ -98,7 +98,7 @@ def get_last_24h_packetloss(ip):
     Get packetloss number for last 24 hours of monitoring
     Return tuple consists persent and sum number (n%, m)
     """
-    get_24h_loss = executeSQLi('''
+    get_24h_loss = executeSQL('''
                         SELECT (sum(sent)-sum(received))*100/sum(sent) as loss_percent,
                                sum(sent)-sum(received)
                             FROM ping_results WHERE ip=? and date_time > datetime('now', '-24 hour') 
@@ -369,11 +369,10 @@ def show_statistic(group_id):
     group_info.append(group_ip_hostname_list)
 
     # get packetloss numbers for every IP in group
-    24h_packetloss = {}
+    last_24h_packetloss = {}
     group_ip_list = [x[0] for x in group_ip_hostname_list]
-    for ip in group_ip_list():
-        24h_packetloss[ip] = get_last_24h_packetloss(ip)
-        print 24h_packetloss[ip]
+    for ip in group_ip_list:
+        last_24h_packetloss[ip] = get_last_24h_packetloss(ip)
 
     # Check if IP is specified in GET query.
     # If wrong IP is specified than redirect to group page
@@ -404,6 +403,7 @@ def show_statistic(group_id):
 
     return template('ip_statistic.html',
                     group_info=group_info,
+                    last_24h_packetloss=last_24h_packetloss,
                     ip_statistic=ip_statistic,
                     ip_statistic_hour = ip_statistic_hour,
                     monitoring_date=monitoring_date,
@@ -454,7 +454,7 @@ def edit_group_save(group_id):
     update_group_comment(group_id, group_comment)
     return redirect('/')
 
-run(port=8888, debug=True, reloader=True, interval=0.5)
+run(port=8889, debug=True, reloader=True, interval=0.5)
 #run(host='192.168.7.49', port=8080, debug=True, reload=True)
 #run(server='cgi')
 ###################
