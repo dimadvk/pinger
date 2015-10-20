@@ -52,7 +52,7 @@
                 <table>
                     % for row in monitoring_list:
                     <tr>
-                        <td class='mon-list-separator' colspan='4'>&nbsp;</td>
+                        <td class='mon-list-separator' colspan='5'>&nbsp;</td>
                     </tr>
                     <tr class='mon-list-groupname-row'>
                         <td class='mon-list-groupname' colspan='2'>
@@ -91,10 +91,8 @@
                         <td class='mon-list-ipaddr'>
                             <a href='/{{row[0][0]}}?ip={{element[0]}}' >{{element[0]}}</a>
                         </td>
-                        <td class='mon-list-hostname'>
+                        <td class='mon-list-hostname' colspan='2'>
                             {{element[1]}}
-                        </td>
-                        <td>
                         </td>
                         <td class='td-delete-btn'>
                           <form method='POST' name="delete_ip">
