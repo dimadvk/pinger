@@ -14,7 +14,7 @@
                     <input type="hidden" name="action" value="add_new_item">
                     <input name='ip' id='ip' type='text' maxlength="50" placeholder="111.111.111.111"><b> IP</b>
                     <br>
-                    <input name='hostname' id='hostname' type='text' maxlength="30" placeholder="hostname"><b> Hostname</b>
+                    <input name='hostname' id='hostname' type='text' maxlength="40" placeholder="hostname"><b> Hostname</b>
                     <br>
                     <input onclick="document.getElementById('select_group').disabled = false;
                                     document.getElementById('new_group_name').disabled = true;
@@ -91,9 +91,7 @@
                         <td class='mon-list-ipaddr'>
                             <a href='/{{row[0][0]}}?ip={{element[0]}}' >{{element[0]}}</a>
                         </td>
-                        <td class='mon-list-hostname' colspan='2'>
-                            {{element[1]}}
-                        </td>
+                        <td class='mon-list-hostname' colspan='2'>{{element[1]}}</td>
                         <td class='td-delete-btn'>
                           <form method='POST' name="delete_ip">
                             <input type="hidden" name="action" value="delete_ip">
