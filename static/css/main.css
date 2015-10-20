@@ -95,8 +95,8 @@ input{
 .mon-list-comment{
     background: #DFDFDF;
     font-size: 0.9em;
-    padding-left:10px;
-    white-space:pre-line;
+    padding-left: 10px;
+    white-space: pre-line;
 }
 .mon-list-ipaddr{
     padding-left:20px;
@@ -104,6 +104,7 @@ input{
 }
 .mon-list-hostname{
     width: 450px;
+    white-space: pre-line;
 }
 .mon-list-ip-row0{
 }
