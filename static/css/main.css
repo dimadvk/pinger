@@ -41,21 +41,21 @@ input{
     margin-top:5px;
 }
 #ip{
-    width: 220px;
+    width: 160px;
 }
 #hostname{
-    width: 220px;
+    width: 320px;
 }
 
 #select_group{
-    width: 200px;
+    width: 300px;
 }
 #new_group_name{
-    width: 195px;
+    width: 295px;
 }
 #group_comment{
     resize: none;
-    width:400px;
+    width:500px;
     height: 80px;
     margin-top:5px;
 }
@@ -71,7 +71,7 @@ input{
 }
 #edit-group-comment{
     resize: none;
-    width:400px;
+    width:500px;
     height: 80px;
     margin-top:5px;
 }
