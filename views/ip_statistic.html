@@ -9,7 +9,9 @@
                     </tr>
                     <tr class='mon-list-groupname-row'>
                         <td class='mon-list-groupname' colspan='4'>
-                            <a href='/{{group_info[0][0]}}'>{{group_info[0][1]}}</a>
+                            <div class='groupname-field'>
+                                <a href='/{{group_info[0][0]}}'>{{group_info[0][1]}}</a>
+                            </div>
                         </td>
                         <td class='td-edit-btn'>
                           <form action="/edit/{{group_info[0][0]}}">
@@ -29,7 +31,10 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class='mon-list-comment' colspan='6'>{{group_info[0][2]}}</td>
+                        <td class='mon-list-comment' colspan='6'>
+                            <div class='comment-field'>{{group_info[0][2]}}
+                            </div>
+                        </td>
                     </tr>
                     <%
                         i = 2
@@ -44,7 +49,7 @@
                             <a href='/{{group_info[0][0]}}?ip={{element[0]}}' >{{element[0]}}</a>
                         </td>
                         <td class='mon-list-hostname'>
-                            {{element[1]}}
+                            <div class='hostname-field'>{{element[1]}}</div>
                         </td>
                         <td>
                             <%

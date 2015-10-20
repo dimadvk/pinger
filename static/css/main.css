@@ -80,6 +80,7 @@ input{
 */
 .content table{
     border-collapse:collapse;
+    table-layout: fixed;
 }
 .mon-list-separator{
     background: #D3D3D3;
@@ -105,6 +106,19 @@ input{
 .mon-list-hostname{
     width: 450px;
     white-space: pre-line;
+    word-wrap: break-word;
+}
+.hostname-field{
+    word-wrap: break-word;
+    width: 450px;
+}
+.groupname-field{
+    word-wrap: break-word;
+    width: 800px;
+}
+.comment-field{
+    word-wrap: break-word;
+    width: 800px;
 }
 .mon-list-ip-row0{
 }
