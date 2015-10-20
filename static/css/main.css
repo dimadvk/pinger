@@ -10,7 +10,7 @@ html,body{
 }
 div.container{
     margin:auto;
-    width:900px;
+    width:800px;
     background:#F1F1F1;
     min-height:100%;
     padding-bottom:20px;
@@ -23,7 +23,7 @@ div.content{
 div.footer{
     background:#D3D3D3;
     height:80px;
-    width:900px;
+    width:800px;
     float:bottom;
     margin:auto;
 }
@@ -41,21 +41,21 @@ input{
     margin-top:5px;
 }
 #ip{
-    width: 160px;
+    width: 240px;
 }
 #hostname{
-    width: 320px;
+    width: 240px;
 }
 
 #select_group{
-    width: 300px;
+    width: 220px;
 }
 #new_group_name{
-    width: 295px;
+    width: 215px;
 }
 #group_comment{
     resize: none;
-    width:500px;
+    width:420px;
     height: 80px;
     margin-top:5px;
 }
@@ -84,7 +84,7 @@ input{
 }
 .mon-list-separator{
     background: #D3D3D3;
-    width:900px
+    width:800px
 }
 .mon-list-groupname-row{
     background: #DFDFDF;
@@ -104,25 +104,25 @@ input{
     width: 160px;
 }
 .mon-list-hostname{
-    width: 450px;
+    width: 350px;
     white-space: pre-line;
     word-wrap: break-word;
 }
 .hostname-field-mainpage{
     word-wrap: break-word;
-    width: 650px;
+    width: 550px;
 }
 .hostname-field-statistics{
     word-wrap: break-word;
-    width: 450px;
+    width: 350px;
 }
 .groupname-field{
     word-wrap: break-word;
-    width: 800px;
+    width: 700px;
 }
 .comment-field{
     word-wrap: break-word;
-    width: 800px;
+    width: 700px;
 }
 .mon-list-ip-row0{
 }

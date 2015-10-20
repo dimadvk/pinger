@@ -51,12 +51,10 @@
                         <td class='mon-list-hostname'>
                             <div class='hostname-field-statistics'>{{element[1]}}</div>
                         </td>
-                        <td>
-                            <%
+                        <%
                                 loss = last_24h_packetloss[element[0]]
                             %>
-                            24h loss: {{loss[0]}}%
-                        </td>
+                        <td>24h loss: {{loss[0]}}%</td>
                         <td>
                         ({{loss[1]}})
                         </td>
