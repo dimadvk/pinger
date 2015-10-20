@@ -108,7 +108,11 @@ input{
     white-space: pre-line;
     word-wrap: break-word;
 }
-.hostname-field{
+.hostname-field-mainpage{
+    word-wrap: break-word;
+    width: 650px;
+}
+.hostname-field-statistics{
     word-wrap: break-word;
     width: 450px;
 }
