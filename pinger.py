@@ -7,23 +7,23 @@
 #
 #####
 
-import time # need for calculate current time
-import os # need for start ping processes
+import time
+import os
 import sqlite3
 import re
 
-### --- ###
 # Name of database for storing data
-db_name='db_pinger.sqlite3'
+db_name = 'db_pinger.sqlite3'
 path_to_script = os.path.dirname(__file__)
 db = os.path.join(path_to_script, db_name)
 
 # Path to ping utility
-ping = '/bin/ping' 
+ping = '/bin/ping'
 
-# Monitoring results older then "days_results_obselete" will be removed from base
+# Monitoring results older then "days_results_obselete"
+# will be removed from base
 day_results_obselete = '30'
-### --- ###
+
 
 # if there is no database at path 'db' than create one
 if not os.path.isfile(db):
@@ -49,10 +49,11 @@ if not os.path.isfile(db):
 
 ##################
 
+
 def executeSQL(statement, args=''):
     """
     execute SQL-statement, return result.
-    Next type of oraguments is required: 
+    Next type of oraguments is required:
         'statement' - sql-statement as a string, 'args' - tuple.
     """
     with sqlite3.connect(db) as connection:
@@ -78,7 +79,7 @@ def pinger(ip_list):
     ping_processes = {}
     ping_results = {}
     # current date and time "YYYY-mm-dd HH:MM"
-    current_time = time.strftime("%Y-%m-%d %H:%M") 
+    current_time = time.strftime("%Y-%m-%d %H:%M")
 
     # start ping for each IP
     for ip in ip_list:
@@ -87,11 +88,12 @@ def pinger(ip_list):
     # Retrive results of ping for each ip
     for ip in ip_list:
             ping_results[ip] = ping_processes[ip].readlines()
-    
-    ## write results to database
+
+    # write results to database
     for ip in ping_results:
         statistic = []
-        # find a row that contains "packet transmitted "+"packet received" and get the numbers
+        # find a row that contains "packet transmitted "+"packet received"
+        # and get the numbers
         for row in ping_results[ip]:
             if re.match('^.+transmitted.+received.+$', row):
                 print row
@@ -107,7 +109,7 @@ def pinger(ip_list):
         statistic.append(sent)
         statistic.append(received)
         executeSQL('''
-            INSERT INTO ping_results(date_time, ip, sent, received) 
+            INSERT INTO ping_results(date_time, ip, sent, received)
                 VALUES (?, ?, ?, ?)
                 ''', (current_time, ip, statistic[0], statistic[1]))
 
@@ -116,7 +118,7 @@ def delete_old_results(count_of_days):
     """
     Remove monitoring results older than "count_of_days" days
     """
-    statement = '''DELETE FROM ping_results 
+    statement = '''DELETE FROM ping_results
                         WHERE date(date_time) <= date('now', '-{} days')
                         '''.format(count_of_days)
     executeSQL(statement)

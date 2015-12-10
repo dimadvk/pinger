@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # coding:utf-8
 
-from bottle import run, route, HTTPError, static_file, template, request, redirect
+from bottle import run, route, HTTPError, static_file, template, request, redirect  # noqa
 from iptools import IpRangeList
 import time
 import sqlite3
 import os
 import re
 
-### Global variables ###
+# Global variables #
 
 # Name of database for storing data
-db_name='db_pinger.sqlite3'
+db_name = 'db_pinger.sqlite3'
 
 path_to_script = os.path.dirname(__file__)
 db = os.path.join(path_to_script, db_name)
@@ -259,6 +259,7 @@ def validate(**kwargs):
 def static_css(filename):
     return static_file(filename, root='static/css/')
 
+
 # / - start page
 @route('/')
 def start_page(error_message=''):
@@ -277,6 +278,7 @@ def start_page(error_message=''):
                     monitoring_list = monitoring_list,
                     error_message=error_message,
                     page_title = 'Pinger')
+
 
 # / - start page with POST method
 @route('/', method='POST')
@@ -318,7 +320,7 @@ def start_page_post():
         # if user enter a new group name than create new group
         elif new_group_name: 
             new_group_name = new_group_name.decode('utf-8')
-            #get list of group names
+            # get list of group names
             group_list = get_group_and_comment_list()
             group_name_list = [x[1] for x in group_list]
 
@@ -349,6 +351,7 @@ def start_page_post():
         if validate_data['group_id'] and validate_data['ip_address']:
             delete_ip_from_monitoring(group_id, ip_address)
         return redirect(request.path)
+
 
 # /<group_id> - open a page for one group
 @route('/<group_id:re:\d*>')
@@ -412,6 +415,7 @@ def show_statistic(group_id):
                     hour=hour,
                     page_title='Statistics - Pinger')
 
+
 # '/<group_id>' with POST method
 @route('/<:re:\d*>', method='POST')
 def group_page_post():
@@ -433,19 +437,21 @@ def group_page_post():
             delete_ip_from_monitoring(group_id, ip_address)
         return redirect(request.path)
 
+
 # /edit/<group_id> - edit comment for group
 @route('/edit/<group_id:re:\d*>')
 def edit_group(group_id):
     # get (group_id, group_name, group_comment)
     group_id_name_comment = get_group_name_and_comment(group_id)
 
-    #if no group found for specified group_id than redirect to '/'
+    # if no group found for specified group_id than redirect to '/'
     if not len(group_id_name_comment):
         raise HTTPError(404, "Not found: " + repr(request.path))
 
     return template('edit_group.html',
                     group_id_name_comment=group_id_name_comment,
                     page_title='Edit Comment - Pinger')
+
 
 # /edit/<group_id> - save new comment after edit and go to '/'
 @route('/edit/<group_id:re:\d*>', method='POST')
@@ -455,6 +461,6 @@ def edit_group_save(group_id):
     return redirect('/')
 
 run(port=8888, debug=True, reloader=True, interval=0.5)
-#run(host='192.168.7.49', port=8080, debug=True, reload=True)
-#run(server='cgi')
+# run(host='192.168.7.49', port=8080, debug=True, reload=True)
+# run(server='cgi')
 ###################
