@@ -21,6 +21,6 @@ Then install pinger with following steps: <br>
 5. run web application to manage ip address list and view monitoring results: <br>
     $ python app.py
 
-- At first running app.py or pinger.py will create database file in pinger directory
+- At first running app.py or pinger.py will create a database file in a pinger directory
 - At the upper part of the scripts app.py and pinger.py there are some variables that you may change
-E.x. name for database, path to ping utility in your Linux pc.
+E.g. name for database, path to ping utility in your Linux pc.
