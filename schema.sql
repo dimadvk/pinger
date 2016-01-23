@@ -1,5 +1,5 @@
 CREATE TABLE group_list
-    (id INTEGER PRIMARY KEY AUTOINCREMENT,
+    (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
      group_name TEXT,
      group_comment TEXT);
 CREATE TABLE ip_list

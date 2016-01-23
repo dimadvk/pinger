@@ -1,3 +1,4 @@
 1. в таблиці ping_results не повинно бути switch_ip, а має бути switch_ID зі списку свтічів
     ** але тоді треба таблицю ip_list розділяти на дві.. ip окремо від hostname
 *** added to pythonanywhere
+*** checked working with github
