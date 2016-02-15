@@ -1,8 +1,4 @@
 % rebase('base.html')
-            <div class='header'>
-                <span><a href='/'><b>Pinger :)</b></a></span>
-                <br>
-            </div>
             % if error_message:
             <div class='error_message'>
                 <span><b>Error:</b> {{error_message}}</span>
@@ -12,9 +8,12 @@
                 <span><b>-- Add IP</b></span>
                 <form class='form-add-ip' name='add_ip' method='POST'>
                     <input type="hidden" name="action" value="add_new_item">
-                    <input name='ip' id='ip' type='text' maxlength="30" placeholder="111.111.111.111"><b> IP</b>
+                    <input name='ip' id='ip' type='text' maxlength="30" required  autofocus placeholder="111.111.111.111"
+                        pattern="^\s*(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\s*$"
+                        title="Valid IP-address" value="{{request.forms.ip}}"><b> IP</b>
                     <br>
-                    <input name='hostname' id='hostname' type='text' maxlength="50" placeholder="hostname"><b> Hostname</b>
+                    <input name='hostname' id='hostname' type='text' maxlength="50" placeholder="hostname"
+                        value="{{request.forms.hostname}}"><b> Hostname</b>
                     <br>
                     <input onclick="document.getElementById('select_group').disabled = false;
                                     document.getElementById('new_group_name').disabled = true;
@@ -35,13 +34,15 @@
                            id="new_group_name"
                            placeholder="new group name"
                            maxlength="50"
-                           disabled="disabled"><b> Create new group</b>
+                           disabled="disabled"
+                           value="{{request.forms.new_group_name}}"><b> Create new group</b>
                     <br>
                     <textarea name='group_comment'
                               id="group_comment"
                               maxlength="500"
                               placeholder="comment for new group"
-                              disabled="disabled"></textarea><b> Comment</b>
+                              disabled="disabled"
+                              value="{{request.forms.group_comment}}"></textarea><b> Comment</b>
                     <br>
                     <input type='submit' value='Add'>
                 </form>

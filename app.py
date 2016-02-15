@@ -262,7 +262,7 @@ def static_css(filename):
 
 # / - start page
 @route('/')
-def start_page(error_message=''):
+def start_page(error_message='', request=None):
     monitoring_list = []
     # get [(group_id, group_name, group_comment), ...]
     group_list = get_group_and_comment_list() 
@@ -273,11 +273,18 @@ def start_page(error_message=''):
         # get [(ip, hostname), ...] for group in group_list
         group_ip_hostname_list = get_group_ip_hostname_list(group_id)
         monitoring_list.append([group, group_ip_hostname_list]) 
-    return template('start.html',
-                    group_list = group_list,
-                    monitoring_list = monitoring_list,
-                    error_message=error_message,
-                    page_title = 'Pinger')
+    kwargs = {
+        'group_list': group_list,
+        'monitoring_list': monitoring_list,
+        'error_message':error_message,
+        'page_title': 'Pinger',
+        'request': request
+    }
+    return template('start.html', **kwargs)
+                   # group_list = group_list,
+                   # monitoring_list = monitoring_list,
+                   # error_message=error_message,
+                   # page_title = 'Pinger')
 
 
 # / - start page with POST method
@@ -335,7 +342,7 @@ def start_page_post():
                 add_ip_for_monitoring(ip_address, hostname, new_group_id)
         else:
             error_message = 'The name of new group is needed'
-        return start_page(error_message)
+        return start_page(error_message, request)
     # END if action == 'add_new_item':
     elif action == "delete_group":
         group_id = request.forms.get('group_id')
