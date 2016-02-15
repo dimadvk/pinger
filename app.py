@@ -231,7 +231,8 @@ def delete_ip_from_monitoring(group_id, ip_address):
 
 def validate(**kwargs):
     """
-    for validate data some gained by POST or GET query
+    For validate data gained by POST or GET query
+    Return {'kwarg': True|False }
     """
     result = {}
     for key in kwargs.keys():
@@ -262,7 +263,7 @@ def static_css(filename):
 
 # / - start page
 @route('/')
-def start_page(error_message='', request=None):
+def start_page(error_message='', request=request):
     monitoring_list = []
     # get [(group_id, group_name, group_comment), ...]
     group_list = get_group_and_comment_list() 
@@ -273,6 +274,13 @@ def start_page(error_message='', request=None):
         # get [(ip, hostname), ...] for group in group_list
         group_ip_hostname_list = get_group_ip_hostname_list(group_id)
         monitoring_list.append([group, group_ip_hostname_list]) 
+    # if no data from forms saved then assign empty strings
+    if not request.forms:
+        request.forms = {'ip':'',
+                         'hostname':'',
+                         'new_group_name':'',
+                         'group_comment':'',
+                         'selected_group':''}
     kwargs = {
         'group_list': group_list,
         'monitoring_list': monitoring_list,
@@ -280,6 +288,11 @@ def start_page(error_message='', request=None):
         'page_title': 'Pinger',
         'request': request
     }
+  #  saved_ip, saved_hostname, saved_new_group_name, saved_group_comment = ''
+  #  if request:
+  #      kwargs.update(request.forms)
+  #  else:
+  #      kwargs.update()
     return template('start.html', **kwargs)
                    # group_list = group_list,
                    # monitoring_list = monitoring_list,
@@ -314,6 +327,7 @@ def start_page_post():
         # user can only chose one of existed groups or enter a name for new group
         if selected_group_id:
             validate_group_id = validate(group_id=selected_group_id)
+            # if not validate - post request where corrupted, not prepared by form. Just redirect.'
             if not validate_group_id['group_id']:
                 return redirect(request.path)
 
