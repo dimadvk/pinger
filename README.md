@@ -3,6 +3,7 @@
 There are:
 - script pinger.py that fetches ip address list from database, makes ping for each ip and save results to database.
 - web application app.py for managing monitoring list and viewing monitoring results
+- view [this](https://github.com/dimadvk/pinger/blob/master/gallery/pinger1.png) and [this](https://github.com/dimadvk/pinger/blob/master/gallery/pinger2.png) pictures to know how it looks
 
 # How to install and use<br>
 
@@ -23,3 +24,5 @@ Launch Pinger with following steps: <br>
 - First running app.py or pinger.py will create a database file in a pinger directory
 - At the upper part of the scripts app.py and pinger.py there are some variables that you may change
 (name for database, path to ping utility).
+<br>
+
