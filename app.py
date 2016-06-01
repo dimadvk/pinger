@@ -356,7 +356,7 @@ def start_page_post():
                 new_group_id = add_group(new_group_name, new_group_comment)
                 add_ip_for_monitoring(ip_address, hostname, new_group_id)
         else:
-            error_message = 'The name of new group is needed'
+            error_message = 'The name of new group is required'
         return start_page(error_message, request)
     # END if action == 'add_new_item':
     elif action == "delete_group":
