@@ -53,7 +53,8 @@ if not os.path.isfile(db):
 
 ##################################################
 
-def executeSQL(statement, args=''):
+# TODO: rename executeSQL to execute_sql for pep8
+def executeSQL(statement, args=()):
     """
     Execute SQL-statement, return result.
     Next format of oraguments is required: 
